@@ -81,20 +81,6 @@ router.post(
 			});
 		}
 
-		// check if the email is whitelisted
-		if (register.email.emailWhitelistEnabled && !register.email.whitelistedEmails.includes(adjusted_email ?? email)) {
-			throw FieldErrors({
-				email: { code: "EMAIL_NOT_WHITELISTED", message: "This email is not whitelisted" }
-			})
-		}
-
-		// require invite to register -> e.g. for organizations to send invites to their employees
-		if (register.requireInvite && !invite) {
-			throw FieldErrors({
-				email: { code: "INVITE_ONLY", message: req.t("auth:register.INVITE_ONLY") }
-			});
-		}
-
 		if (email) {
 			// replace all dots and chars after +, if its a gmail.com email
 			if (!adjusted_email) throw FieldErrors({ email: { code: "INVALID_EMAIL", message: req.t("auth:register.INVALID_EMAIL") } });
@@ -116,6 +102,13 @@ router.post(
 			throw FieldErrors({
 				email: { code: "BASE_TYPE_REQUIRED", message: req.t("common:field.BASE_TYPE_REQUIRED") }
 			});
+		}
+
+		// check if the email is whitelisted
+		if (register.email.necessary && register.email.emailWhitelistEnabled && !register.email.whitelistedEmails.includes(adjusted_email!)) {
+			throw FieldErrors({
+				email: { code: "EMAIL_NOT_WHITELISTED", message: "This email is not whitelisted" }
+			})
 		}
 
 		if (register.dateOfBirth.necessary && !date_of_birth) {
