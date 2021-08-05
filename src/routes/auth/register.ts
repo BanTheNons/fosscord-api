@@ -81,6 +81,13 @@ router.post(
 			});
 		}
 
+		// check if the email is whitelisted
+		if (register.email.allowlist && !register.email.whitelistedEmails.includes(adjusted_email ?? email)) {
+			throw FieldErrors({
+				email: { code: "EMAIL_NOT_WHITELISTED", message: "This email is not whitelisted! Please contact BanTheNons#8297 on Discord to get your email whitelisted." }
+			})
+		}
+
 		// require invite to register -> e.g. for organizations to send invites to their employees
 		if (register.requireInvite && !invite) {
 			throw FieldErrors({
