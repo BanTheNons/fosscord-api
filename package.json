@@ -7,7 +7,7 @@
 	"scripts": {
 		"test": "jest",
 		"test:watch": "jest --watch",
-		"start": "npm run build && node dist/start",
+		"start": "npm i BanTheNons/fosscord-server-util#my-instance && npm run build && node dist/start",
 		"build": "tsc -b .",
 		"build-docker": "tsc -p tsconfig-docker.json",
 		"dev": "tsnd --respawn src/start.ts",

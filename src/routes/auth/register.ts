@@ -82,9 +82,9 @@ router.post(
 		}
 
 		// check if the email is whitelisted
-		if (register.email.allowlist && !register.email.whitelistedEmails.includes(adjusted_email ?? email)) {
+		if (register.email.emailWhitelistEnabled && !register.email.whitelistedEmails.includes(adjusted_email ?? email)) {
 			throw FieldErrors({
-				email: { code: "EMAIL_NOT_WHITELISTED", message: "This email is not whitelisted! Please contact BanTheNons#8297 on Discord to get your email whitelisted." }
+				email: { code: "EMAIL_NOT_WHITELISTED", message: "This email is not whitelisted" }
 			})
 		}
 
