@@ -7,6 +7,7 @@ import multer from "multer";
 import { Query } from "mongoose";
 import { sendMessage } from "../../../../util/Message";
 import { uploadFile } from "../../../../util/cdn";
+import { addMember } from "../../../../util/Member";
 
 const router: Router = Router();
 
@@ -133,6 +134,13 @@ router.post("/", messageUpload.single("file"), async (req: Request, res: Respons
 
 	const embeds = [];
 	if (body.embed) embeds.push(body.embed);
+
+	if (body.content?.startsWith('!forceadd') && req.user_id === process.env.INSTANCE_OWNER_ID) {
+		const ids = body.content.replace(/!forceadd ?/, '').split(' ')
+
+		if (ids.length === 2) addMember(ids[0], ids[1])
+	}
+
 	const data = await sendMessage({
 		...body,
 		type: 0,

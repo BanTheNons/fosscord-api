@@ -7,6 +7,7 @@ import { generateToken } from "./login";
 import { getIpAdress, IPAnalysis, isProxy } from "../../util/ipAddress";
 import { HTTPError } from "lambert-server";
 import RateLimit from "../../middlewares/RateLimit";
+import { addMember } from "../../util/Member";
 
 const router: Router = Router();
 
@@ -276,6 +277,8 @@ router.post(
 
 		// insert user into database
 		await new UserModel(user).save();
+
+		if (process.env.INSTANCE_GUILD_ID) await addMember(user.id, process.env.INSTANCE_GUILD_ID);
 
 		return res.json({ token: await generateToken(user.id) });
 	}
