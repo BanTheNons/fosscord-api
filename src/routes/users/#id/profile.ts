@@ -8,8 +8,8 @@ router.get("/", async (req: Request, res: Response) => {
 
     res.json({
         connected_accounts: user.user_data.connected_accounts,
-        premium_guild_since: null, // TODO
-        premium_since: null, // TODO
+        premium_guild_since: new Date(1), // TODO
+        premium_since: new Date(1), // TODO
         user: {
             username: user.username,
             discriminator: user.discriminator,
