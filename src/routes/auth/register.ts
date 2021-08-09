@@ -24,6 +24,7 @@ router.post(
 		$invite: String,
 		$date_of_birth: Date, // "2000-04-03"
 		$gift_code_sku_id: String,
+		$promotional_email_opt_in: Boolean,
 		$captcha_key: String
 	}),
 	async (req: Request, res: Response) => {
