@@ -36,6 +36,7 @@ router.post(
 			invite,
 			date_of_birth,
 			gift_code_sku_id, // ? what is this
+			promotional_email_opt_in,
 			captcha_key
 		} = req.body;
 
