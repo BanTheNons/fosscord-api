@@ -106,8 +106,10 @@ build
 
 .DS_STORE
 src/ready.json
-client_test/*
 
 # Docker
 .docker/config/*
 !.docker/config/.keep
+
+# Demo client
+client_test/index.html
