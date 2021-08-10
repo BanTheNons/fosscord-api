@@ -106,6 +106,7 @@ build
 
 .DS_STORE
 src/ready.json
+client_test/index.html
 
 # Docker
 .docker/config/*
