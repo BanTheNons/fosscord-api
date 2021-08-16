@@ -8,8 +8,8 @@ export const NO_AUTHORIZATION_ROUTES = [
 	"/webhooks/",
 	"/ping",
 	"/gateway",
-	"/experiments"
-	// /^\/api(\/v\d+)?\/guilds\/\d+\/widget\.(json|png)/
+	"/experiments",
+	/\/guilds\/\d+\/widget\.(json|png)/
 ];
 
 export const API_PREFIX = /^\/api(\/v\d+)?/;
@@ -24,14 +24,17 @@ declare global {
 		}
 	}
 }
-// TODO wenn client offen ist, wird http://localhost:8080/api/v9/users/@me/guild-events blockiert?
 
 export async function Authentication(req: Request, res: Response, next: NextFunction) {
 	if (req.method === "OPTIONS") return res.sendStatus(204);
-	if (!req.url.startsWith("/api")) return next();
-	const apiPath = req.url.replace(API_PREFIX, "");
-	if (apiPath.startsWith("/invites") && req.method === "GET") return next(); // @ts-ignore
-	if (NO_AUTHORIZATION_ROUTES.some((x) => apiPath.startsWith(x) || x.test?.(req.url))) return next();
+	if (req.url.startsWith("/invites") && req.method === "GET") return next(); // @ts-ignore
+	if (
+		NO_AUTHORIZATION_ROUTES.some((x) => {
+			if (typeof x === "string") return req.url.startsWith(x);
+			return x.test(req.url);
+		})
+	)
+		return next();
 	if (!req.headers.authorization) return next(new HTTPError("Missing Authorization Header", 401));
 
 	try {

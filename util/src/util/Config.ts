@@ -43,9 +43,11 @@ export interface KafkaBroker {
 
 export interface DefaultOptions {
 	gateway: {
+		endpointClient: string | null;
 		endpoint: string | null;
 	};
 	cdn: {
+		endpointClient: string | null;
 		endpoint: string | null;
 	};
 	general: {
@@ -97,6 +99,7 @@ export interface DefaultOptions {
 		};
 	};
 	security: {
+		autoUpdate: boolean | number;
 		requestSignature: string;
 		jwtSecret: string;
 		forwadedFor: string | null; // header to get the real user ip address
@@ -148,9 +151,11 @@ export interface DefaultOptions {
 
 export const DefaultOptions: DefaultOptions = {
 	gateway: {
+		endpointClient: null,
 		endpoint: null,
 	},
 	cdn: {
+		endpointClient: null,
 		endpoint: null,
 	},
 	general: {
@@ -226,6 +231,7 @@ export const DefaultOptions: DefaultOptions = {
 		},
 	},
 	security: {
+		autoUpdate: true,
 		requestSignature: crypto.randomBytes(32).toString("base64"),
 		jwtSecret: crypto.randomBytes(256).toString("base64"),
 		forwadedFor: null,

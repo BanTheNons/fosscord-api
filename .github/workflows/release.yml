@@ -14,29 +14,34 @@ jobs:
         os: [windows, macos, ubuntu]
         include:
           - os: windows
-            build: npm run bundle:windows
+            build: npx caxa -i .. -m 'This_may_take_a_while_to_run_the_first_time_please_wait...' --output 'fosscord-server-windows.exe' -- '{{caxa}}/node_modules/.bin/node' '{{caxa}}/bundle/dist/start.js'
             artifact: fosscord-server-windows.exe
           - os: macos
-            build: npm run bundle:macos
+            build: npx caxa -i .. -m 'This may take a while to run the first time, please wait...' --output 'fosscord-server.app' -- '{{caxa}}/node_modules/.bin/node' '{{caxa}}/bundle/dist/start.js' && tar -czf 'fosscord-server-macos.app.tgz' 'fosscord-server.app'
             artifact: fosscord-server-macos.app.tgz
           - os: ubuntu
-            build: npm run bundle:linux
+            build: npx caxa -i .. -m 'This may take a while to run the first time, please wait...' --output 'fosscord' -- '{{caxa}}/node_modules/.bin/node' '{{caxa}}/bundle/dist/start.js' && tar -czf 'fosscord-server-linux.tgz' 'fosscord'
             artifact: fosscord-server-linux.tgz
     runs-on: ${{ matrix.os }}-latest
     steps:
       - uses: actions/checkout@v2
       - uses: actions/setup-node@v2
-        with:
-          node-version: 14
-      - run: npm install
         env:
           MONGOMS_VERSION: 4.4.3
-      - run: npm run build
-      - run: ${{ matrix.build }}
+        with:
+          node-version: 14
+      - run: |
+          cd util
+          npm install
+          cd ../bundle
+          npm install
+          npm i caxa
+          npm run build
+          ${{ matrix.build }}
       - uses: actions/upload-artifact@v2
         with:
           name: ${{ matrix.artifact }}
-          path: ${{ matrix.artifact }}
+          path: bundle/${{ matrix.artifact }}
 
   release:
     needs: [insiders-build]
@@ -45,7 +50,9 @@ jobs:
       - uses: actions/checkout@v2
       - name: Extract version
         id: extract_version
-        uses: Saionaro/extract-package-version@v1.0.6
+        uses: Saionaro/extract-package-version@v1.1.1
+        with:
+          path: api
       - uses: actions/download-artifact@v2
         with:
           name: fosscord-server-windows.exe

@@ -10,8 +10,8 @@ import { Config } from "../../util/dist";
 
 const app = express();
 const server = http.createServer();
-const port = Number(process.env.PORT) || 8080;
-const production = true;
+const port = Number(process.env.PORT) || 3001;
+const production = false;
 server.on("request", app);
 
 // @ts-ignore
@@ -22,12 +22,20 @@ const cdn = new CDNServer({ server, port, production, app });
 const gateway = new GatewayServer({ server, port, production });
 
 async function main() {
+	await Config.set({
+		cdn: {
+			endpointClient: "${location.host}",
+			endpoint: `http://localhost:${port}`,
+		},
+		gateway: {
+			endpointClient: '${location.protocol === "https:" ? "wss://" : "ws://"}${location.host}',
+			endpoint: `ws://localhost:${port}`,
+		},
+	});
+
 	await api.start();
 	await cdn.start();
 	await gateway.start();
-
-	if (!Config.get().gateway.endpoint) await Config.set({ gateway: { endpoint: `ws://localhost:${port}` } });
-	if (!Config.get().cdn.endpoint) await Config.set({ cdn: { endpoint: `http://localhost:${port}` } });
 }
 
 main().catch(console.error);
