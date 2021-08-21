@@ -120,6 +120,8 @@ export interface DefaultOptions {
 			allowlist: boolean;
 			blocklist: boolean;
 			domains: string[];
+			emailWhitelistEnabled: boolean;
+			whitelistedEmails: string[];
 		};
 		dateOfBirth: {
 			necessary: boolean;
@@ -255,6 +257,8 @@ export const DefaultOptions: DefaultOptions = {
 			blocklist: true,
 			domains: [], // TODO: efficiently save domain blocklist in database
 			// domains: fs.readFileSync(__dirname + "/blockedEmailDomains.txt", { encoding: "utf8" }).split("\n"),
+			emailWhitelistEnabled: false,
+			whitelistedEmails: [],
 		},
 		dateOfBirth: {
 			necessary: true,
