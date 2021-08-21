@@ -12,16 +12,17 @@ router.patch("/", check(MessageCreateSchema), async (req: Request, res: Response
 	const { message_id, channel_id } = req.params;
 	var body = req.body as MessageCreateSchema;
 
-	var message = await MessageModel.findOne({ id: message_id, channel_id }, { author_id: true }).exec();
+	var message = await MessageModel.findOne({ id: message_id, channel_id }, { author_id: true, message_reference: true }).lean().exec();
 
 	const permissions = await getPermission(req.user_id, undefined, channel_id);
 
 	if (req.user_id !== message.author_id) {
 		permissions.hasThrow("MANAGE_MESSAGES");
-		body = { flags: body.flags };
+		body = { flags: body.flags }; // admins can only suppress embeds of other messages
 	}
 
 	const opts = await handleMessage({
+		message_reference: message.message_reference,
 		...body,
 		author_id: message.author_id,
 		channel_id,
@@ -30,7 +31,7 @@ router.patch("/", check(MessageCreateSchema), async (req: Request, res: Response
 	});
 
 	// @ts-ignore
-	message = await MessageModel.findOneAndUpdate({ id: message_id }, opts).populate("author").exec();
+	message = await MessageModel.findOneAndUpdate({ id: message_id }, opts, { new: true }).populate("author").exec();
 
 	await emitEvent({
 		event: "MESSAGE_UPDATE",

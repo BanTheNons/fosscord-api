@@ -5,15 +5,12 @@ import { Authentication, CORS } from "./middlewares/";
 import { Config, db, initEvent } from "@fosscord/util";
 import { ErrorHandler } from "./middlewares/ErrorHandler";
 import { BodyParser } from "./middlewares/BodyParser";
-import { Router, Request, Response } from "express";
+import { Router, Request, Response, NextFunction } from "express";
 import mongoose from "mongoose";
 import path from "path";
 import { initRateLimits } from "./middlewares/RateLimit";
 import TestClient from "./middlewares/TestClient";
 import { initTranslation } from "./middlewares/Translation";
-
-// this will return the new updated document for findOneAndUpdate
-mongoose.set("returnOriginal", false); // https://mongoosejs.com/docs/api/model.html#model_Model.findOneAndUpdate
 
 export interface FosscordServerOptions extends ServerOptions {}
 
@@ -69,7 +66,8 @@ export class FosscordServer extends Server {
 
 		this.routes = await this.registerRoutes(path.join(__dirname, "routes", "/"));
 
-		api.use("*", (req: Request, res: Response, next) => {
+		api.use("*", (error: any, req: Request, res: Response, next: NextFunction) => {
+			if (error) return next(error);
 			res.status(404).json({
 				message: "404: Not Found",
 				code: 0
