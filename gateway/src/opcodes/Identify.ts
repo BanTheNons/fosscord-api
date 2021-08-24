@@ -65,7 +65,7 @@ export async function onIdentify(this: WebSocket, data: Payload) {
 
 	const channels = await ChannelModel.find({ recipient_ids: this.user_id }).exec();
 	const user = await UserModel.findOne({ id: this.user_id }).exec();
-	if (!user) return this.close(CLOSECODES.Authentication_failed);
+	if (!user || user.disabled || user.deleted) return this.close(CLOSECODES.Authentication_failed);
 
 	const public_user = {
 		username: user.username,
