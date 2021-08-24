@@ -170,27 +170,27 @@ export const DefaultOptions: DefaultOptions = {
 	},
 	limits: {
 		user: {
-			maxGuilds: 100,
-			maxUsername: 32,
-			maxFriends: 1000,
+			maxGuilds: 65535,
+			maxUsername: 255,
+			maxFriends: 2048,
 		},
 		guild: {
-			maxRoles: 250,
-			maxMembers: 250000,
-			maxChannels: 500,
-			maxChannelsInCategory: 50,
-			hideOfflineMember: 1000,
+			maxRoles: 65535,
+			maxMembers: 387420489,
+			maxChannels: 65535,
+			maxChannelsInCategory: 65535,
+			hideOfflineMember: 3,
 		},
 		message: {
-			maxCharacters: 2000,
+			maxCharacters: 1048575,
 			maxTTSCharacters: 200,
-			maxReactions: 20,
-			maxAttachmentSize: 8388608,
-			maxBulkDelete: 100,
+			maxReactions: 255,
+			maxAttachmentSize: 104857600,
+			maxBulkDelete: 1048576,
 		},
 		channel: {
-			maxPins: 50,
-			maxTopic: 1024,
+			maxPins: 255,
+			maxTopic: 65535,
 		},
 		rate: {
 			ip: {
