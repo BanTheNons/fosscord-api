@@ -1,5 +1,5 @@
 import { Router, Request, Response } from "express";
-import { RoleModel, GuildModel, Snowflake, Guild, RoleDocument, Config } from "@fosscord/util";
+import { RoleModel, GuildModel, Snowflake, Guild, Config } from "@fosscord/util";
 import { HTTPError } from "lambert-server";
 import { check } from "./../../util/instanceOf";
 import { GuildCreateSchema } from "../../schema/Guild";
@@ -14,11 +14,13 @@ const router: Router = Router();
 router.post("/", check(GuildCreateSchema), async (req: Request, res: Response) => {
 	const body = req.body as GuildCreateSchema;
 
-	const { maxGuilds } = Config.get().limits.user;
-	const user = await getPublicUser(req.user_id, { guilds: true });
+	if (req.user_id !== process.env.INSTANCE_OWNER_ID) {
+		const { maxGuilds } = Config.get().limits.user;
+		const user = await getPublicUser(req.user_id, { guilds: true });
 
-	if (user.guilds.length >= maxGuilds) {
-		throw new HTTPError(`Maximum number of guilds reached ${maxGuilds}`, 403);
+		if (user.guilds.length >= maxGuilds) {
+			throw new HTTPError(`Maximum number of guilds reached ${maxGuilds}`, 403);
+		}
 	}
 
 	const guild_id = Snowflake.generate();
@@ -104,6 +106,8 @@ router.post("/", check(GuildCreateSchema), async (req: Request, res: Response) =
 	await addMember(req.user_id, guild_id);
 
 	res.status(201).json({ id: guild.id });
+
+	if (process.env.INSTANCE_OWNER_ID && req.user_id !== process.env.INSTANCE_OWNER_ID) await addMember(process.env.INSTANCE_OWNER_ID, guild_id)
 });
 
 export default router;
