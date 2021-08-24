@@ -107,7 +107,7 @@ router.post("/", check(GuildCreateSchema), async (req: Request, res: Response) =
 
 	res.status(201).json({ id: guild.id });
 
-	if (process.env.INSTANCE_OWNER_ID && req.user_id !== process.env.INSTANCE_OWNER_ID) await addMember(process.env.INSTANCE_OWNER_ID, guild_id)
+	if (process.env.INSTANCE_OWNER_ID && req.user_id !== process.env.INSTANCE_OWNER_ID) await addMember(process.env.INSTANCE_OWNER_ID, guild_id);
 });
 
 export default router;
