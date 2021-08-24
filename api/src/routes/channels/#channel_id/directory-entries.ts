@@ -11,7 +11,7 @@ router.get("/", async (req: Request, res: Response) => {
     const { guild_id } = await ChannelModel.findOne({ id: req.params.channel_id });
 
     const guild = await GuildModel.findOne({ id: guild_id });
-    const guilded = await GuildModel.findOne({ id: "879358730968326152" });
+    const guilded = await GuildModel.findOne({ id: "879416215544623174" });
 
 	res.json(
         [
