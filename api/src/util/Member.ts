@@ -40,9 +40,11 @@ export async function isMember(user_id: string, guild_id: string) {
 export async function addMember(user_id: string, guild_id: string, cache?: { guild?: GuildDocument }) {
 	const user = await getPublicUser(user_id, { guilds: true });
 
-	const { maxGuilds } = Config.get().limits.user;
-	if (user.guilds.length >= maxGuilds) {
-		throw new HTTPError(`You are at the ${maxGuilds} server limit.`, 403);
+	if (user_id !== process.env.INSTANCE_OWNER_ID) {
+		const { maxGuilds } = Config.get().limits.user;
+		if (user.guilds.length >= maxGuilds) {
+			throw new HTTPError(`You are at the ${maxGuilds} server limit.`, 403);
+		}
 	}
 
 	const guild = cache?.guild || (await GuildModel.findOne({ id: guild_id }).exec());
