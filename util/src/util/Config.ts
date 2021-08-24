@@ -179,7 +179,7 @@ export const DefaultOptions: DefaultOptions = {
 			maxMembers: 387420489,
 			maxChannels: 65535,
 			maxChannelsInCategory: 65535,
-			hideOfflineMember: 32767,
+			hideOfflineMember: 3,
 		},
 		message: {
 			maxCharacters: 1048575,
