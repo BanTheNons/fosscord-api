@@ -21,7 +21,7 @@ router.get("/", async (req: Request, res: Response) => {
 // user send to leave a certain guild
 router.delete("/:id", async (req: Request, res: Response) => {
 	const guild_id = req.params.id;
-	if (process.env.INSTANCE_GUILD_ID === guild_id) throw new HTTPError("You can't leave this guild", 400);
+	if (process.env.INSTANCE_GUILD_ID === guild_id) throw new HTTPError("You can't leave this guild", 403);
 	const guild = await GuildModel.findOne({ id: guild_id }, { guild_id: true }).exec();
 
 	if (!guild) throw new HTTPError("Guild doesn't exist", 404);
