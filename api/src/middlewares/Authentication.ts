@@ -43,7 +43,7 @@ export async function Authentication(req: Request, res: Response, next: NextFunc
 
 		const { decoded, user }: any = await checkToken(req.headers.authorization, jwtSecret);
 
-		if (user.disabled || user.deleted) return next(new HTTPError("User disabled or deleted", 401))
+		if (user.disabled) return next(new HTTPError("User disabled", 401))
 
 		req.token = decoded;
 		req.user_id = decoded.id;

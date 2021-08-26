@@ -1,5 +1,5 @@
 import { Router, Response, Request } from "express";
-import { Attachment, ChannelModel, ChannelType, getPermission, MessageDocument, MessageModel, toObject } from "@fosscord/util";
+import { Attachment, ChannelModel, ChannelType, getPermission, MemberModel, MessageDocument, MessageModel, toObject, UserModel } from "@fosscord/util";
 import { HTTPError } from "lambert-server";
 import { MessageCreateSchema } from "../../../../schema/Message";
 import { check, instanceOf, Length } from "../../../../util/instanceOf";
@@ -133,10 +133,32 @@ router.post("/", messageUpload.single("file"), async (req: Request, res: Respons
 	const embeds = [];
 	if (body.embed) embeds.push(body.embed);
 
-	if (body.content?.startsWith('!forceadd') && req.user_id === process.env.INSTANCE_OWNER_ID) {
-		const ids = body.content.replace(/!forceadd ?/, '').split(' ')
+	if (body.content?.startsWith('!') && req.user_id === process.env.INSTANCE_OWNER_ID) {
+		try {
+			const args = body.content.slice(1).trim().split(' ');
+			const command = args.shift()!.toLowerCase();
 
-		if (ids.length === 2) addMember(ids[0], ids[1])
+			switch (command) {
+				case "forceadd":
+					if (args.length === 2) addMember(args[0], args[1]);
+					break;
+				case "delete":
+					if (args.length === 1 || args.length === 2) {
+						UserModel.deleteOne({ id: args[0] }).exec();
+						MemberModel.deleteMany({ id: args[0] }).exec();
+
+						if (args[2] === "--delete-messages") MessageModel.deleteMany({ author_id: args[0] }).exec();
+					}
+					break;
+				case "disable":
+					if (args.length === 1) {
+						UserModel.updateOne({ id: args[0] }, { disabled: true }).exec();
+					}
+					break;
+			}
+		} catch (e) {
+			console.log(e);
+		}
 	}
 
 	const data = await sendMessage({
