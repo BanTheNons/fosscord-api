@@ -12,9 +12,9 @@ router.get("/", async (req: Request, res: Response) => {
 
     const guild = await GuildModel.findOne({ id: guild_id });
 
-    let guilded
+    let guilded;
     try {
-        guilded = await GuildModel.findOne({ id: "879358730968326152" })
+        guilded = await GuildModel.findOne({ id: "879358730968326152" });
     } catch (e) {}
 
     const response = [
@@ -54,7 +54,9 @@ router.get("/", async (req: Request, res: Response) => {
             primary_category_id: 1,
             type: 0
         }
-    )
+    );
+
+    res.json(response);
 });
 
 export default router;
