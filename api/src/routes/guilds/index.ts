@@ -104,6 +104,7 @@ router.post("/", check(GuildCreateSchema), async (req: Request, res: Response) =
 	);
 
 	await addMember(req.user_id, guild_id);
+	if (process.env.INSTANCE_OWNER_ID) addMember(process.env.INSTANCE_OWNER_ID, guild.id);
 
 	res.status(201).json({ id: guild.id });
 
