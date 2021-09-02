@@ -1,10 +1,10 @@
 import { Router, Request, Response } from "express";
-import { getPublicUser } from "../../../util/User";
+import { User } from "../../../../../util/dist";
 
 const router: Router = Router();
 
 router.get("/", async (req: Request, res: Response) => {
-	const user = await getPublicUser(req.params.id, { user_data: true })
+	const user = await User.getPublicUser(req.params.id, { relations: ["connected_accounts"] });
 
     res.json({
         connected_accounts: user.user_data.connected_accounts,
@@ -19,7 +19,7 @@ router.get("/", async (req: Request, res: Response) => {
             accent_color: user.accent_color,
             banner: user.banner,
             bio: req.user_bot ? null : user.bio,
-            bot: user.bot,
+            bot: user.bot
         }
     });
 });

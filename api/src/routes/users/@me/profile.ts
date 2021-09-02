@@ -1,10 +1,10 @@
 import { Router, Request, Response } from "express";
-import { getPublicUser } from "../../../util/User";
+import { User } from "../../../../../util/dist";
 
 const router: Router = Router();
 
 router.get("/", async (req: Request, res: Response) => {
-    const user = await getPublicUser(req.user_id, { user_data: true })
+	const user = await User.getPublicUser(req.user_id, { relations: ["connected_accounts"] });
 
     res.json({
         connected_accounts: user.user_data.connected_accounts,
