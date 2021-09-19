@@ -37,7 +37,7 @@ export const PublicUserProjection = Object.values(PublicUserEnum).filter(
 ) as PublicUserKeys[];
 export const PrivateUserProjection = [
 	...PublicUserProjection,
-	Object.values(PrivateUserEnum).filter((x) => typeof x === "string"),
+	...Object.values(PrivateUserEnum).filter((x) => typeof x === "string"),
 ] as PrivateUserKeys[];
 
 // Private user data that should never get sent to the client
@@ -106,7 +106,7 @@ export class User extends BaseClass {
 	mfa_enabled: boolean; // if multi factor authentication is enabled
 
 	@Column()
-	created_at: Date = new Date(); // registration date
+	created_at: Date; // registration date
 
 	@Column()
 	verified: boolean; // if the user is offically verified
@@ -124,10 +124,10 @@ export class User extends BaseClass {
 	flags: string; // UserFlags
 
 	@Column()
-	public_flags: string;
+	public_flags: number;
 
 	@JoinColumn({ name: "relationship_ids" })
-	@OneToMany(() => Relationship, (relationship: Relationship) => relationship.user, { cascade: true })
+	@OneToMany(() => Relationship, (relationship: Relationship) => relationship.from)
 	relationships: Relationship[];
 
 	@JoinColumn({ name: "connected_account_ids" })
@@ -145,6 +145,14 @@ export class User extends BaseClass {
 
 	@Column({ type: "simple-json" })
 	settings: UserSettings;
+
+	toPublicUser() {
+		const user: any = {};
+		PublicUserProjection.forEach((x) => {
+			user[x] = this[x];
+		});
+		return user as PublicUser;
+	}
 
 	static async getPublicUser(user_id: string, opts?: FindOneOptions<User>) {
 		const user = await User.findOne(
@@ -185,7 +193,7 @@ export const defaultSettings: UserSettings = {
 	guild_positions: [],
 	inline_attachment_media: true,
 	inline_embed_media: true,
-	locale: "en",
+	locale: "en-US",
 	message_display_compact: false,
 	native_phone_integration_enabled: true,
 	render_embeds: true,
@@ -250,13 +258,18 @@ export class UserFlags extends BitField {
 		PARTNERED_SERVER_OWNER: BigInt(1) << BigInt(1),
 		HYPESQUAD_EVENTS: BigInt(1) << BigInt(2),
 		BUGHUNTER_LEVEL_1: BigInt(1) << BigInt(3),
+		MFA_SMS: BigInt(1) << BigInt(4),
+		PREMIUM_PROMO_DISMISSED: BigInt(1) << BigInt(5),
 		HOUSE_BRAVERY: BigInt(1) << BigInt(6),
 		HOUSE_BRILLIANCE: BigInt(1) << BigInt(7),
 		HOUSE_BALANCE: BigInt(1) << BigInt(8),
 		EARLY_SUPPORTER: BigInt(1) << BigInt(9),
 		TEAM_USER: BigInt(1) << BigInt(10),
+		TRUST_AND_SAFETY: BigInt(1) << BigInt(11),
 		SYSTEM: BigInt(1) << BigInt(12),
+		HAS_UNREAD_URGENT_MESSAGES: BigInt(1) << BigInt(13),
 		BUGHUNTER_LEVEL_2: BigInt(1) << BigInt(14),
+		UNDERAGE_DELETED: BigInt(1) << BigInt(15),
 		VERIFIED_BOT: BigInt(1) << BigInt(16),
 		EARLY_VERIFIED_BOT_DEVELOPER: BigInt(1) << BigInt(17),
 	};

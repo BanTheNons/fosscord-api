@@ -102,8 +102,7 @@ export class Message extends BaseClass {
 	@CreateDateColumn()
 	timestamp: Date;
 
-	@Column()
-	@UpdateDateColumn()
+	@Column({ nullable: true })
 	edited_timestamp?: Date;
 
 	@Column({ nullable: true })
@@ -129,7 +128,7 @@ export class Message extends BaseClass {
 	sticker_items?: Sticker[];
 
 	@JoinColumn({ name: "attachment_ids" })
-	@OneToMany(() => Attachment, (attachment: Attachment) => attachment.message)
+	@OneToMany(() => Attachment, (attachment: Attachment) => attachment.message, { cascade: true })
 	attachments?: Attachment[];
 
 	@Column({ type: "simple-json" })

@@ -16,6 +16,51 @@ import { Webhook } from "./Webhook";
 // TODO: guild_scheduled_events
 // TODO: stage_instances
 // TODO: threads
+// TODO: categories:
+// [{
+// 	"id": 16,
+// 	"name": {
+// 		"default": "Anime & Manga",
+// 		"localizations": {
+// 			"de": "Anime & Manga",
+// 			"fr": "Anim\u00e9s et mangas",
+// 			"ru": "\u0410\u043d\u0438\u043c\u0435 \u0438 \u043c\u0430\u043d\u0433\u0430"
+// 		}
+// 	},
+// 	"is_primary": false
+// }]
+// TODO:
+//  primary_category :{
+// 	id: 1,
+// 	name: {
+// 		default: "Gaming",
+// 		localizations: { de: "Gaming", fr: "Gaming", ru: "\u0418\u0433\u0440\u044b" },
+// 		is_primary: true,
+// 	},
+// };
+// TODO:
+// "keywords": [
+// 		"Genshin Impact",
+// 		"Paimon",
+// 		"Honkai Impact",
+// 		"ARPG",
+// 		"Open-World",
+// 		"Waifu",
+// 		"Anime",
+// 		"Genshin",
+// 		"miHoYo",
+// 		"Gacha"
+// 	],
+
+export const PublicGuildRelations = [
+	"channels",
+	"emojis",
+	"members",
+	"roles",
+	"stickers",
+	"voice_states",
+	"members.user",
+];
 
 @Entity("guilds")
 export class Guild extends BaseClass {
@@ -56,6 +101,7 @@ export class Guild extends BaseClass {
 
 	@Column({ type: "simple-array" })
 	features: string[]; //TODO use enum
+	//TODO: https://discord.com/developers/docs/resources/guild#guild-object-guild-features
 
 	@Column({ nullable: true })
 	icon?: string;
@@ -91,9 +137,9 @@ export class Guild extends BaseClass {
 
 	@Column({ nullable: true })
 	@RelationId((guild: Guild) => guild.template)
-	template_id: string;
+	template_id?: string;
 
-	@JoinColumn({ name: "template_id" })
+	@JoinColumn({ name: "template_id", referencedColumnName: "id" })
 	@ManyToOne(() => Template)
 	template: Template;
 
@@ -127,7 +173,7 @@ export class Guild extends BaseClass {
 	@RelationId((guild: Guild) => guild.owner)
 	owner_id: string;
 
-	@JoinColumn([{ name: "owner_id", referencedColumnName: "id" }])
+	@JoinColumn({ name: "owner_id", referencedColumnName: "id" })
 	@ManyToOne(() => User)
 	owner: User;
 
@@ -209,4 +255,10 @@ export class Guild extends BaseClass {
 
 	@Column({ nullable: true })
 	widget_enabled?: boolean;
+
+	@Column({ nullable: true })
+	nsfw_level?: number;
+
+	@Column({ nullable: true })
+	nsfw?: boolean;
 }

@@ -1,10 +1,9 @@
 import { NextFunction, Request, Response } from "express";
 import { HTTPError } from "lambert-server";
 import { EntityNotFoundError } from "typeorm";
-import { FieldError } from "../util/instanceOf";
-import {ApiError} from "../util/ApiError";
+import { FieldError } from "@fosscord/api";
+import { ApiError } from "@fosscord/util";
 
-// TODO: update with new body/typorm validation
 export function ErrorHandler(error: Error, req: Request, res: Response, next: NextFunction) {
 	if (!error) return next();
 
@@ -19,16 +18,15 @@ export function ErrorHandler(error: Error, req: Request, res: Response, next: Ne
 			code = error.code;
 			message = error.message;
 			httpcode = error.httpStatus;
-		}
-		else if (error instanceof EntityNotFoundError) {
-			message = `${(error as any).stringifyTarget} can not be found`;
+		} else if (error instanceof EntityNotFoundError) {
+			message = `${(error as any).stringifyTarget || "Item"} could not be found`;
 			code = 404;
 		} else if (error instanceof FieldError) {
 			code = Number(error.code);
 			message = error.message;
 			errors = error.errors;
 		} else {
-			console.error(`[Error] ${code} ${req.url}`, errors || error, "body:", req.body);
+			console.error(`[Error] ${code} ${req.url}\n`, errors || error, "\nbody:", req.body);
 
 			if (req.server?.options?.production) {
 				// don't expose internal errors to the user, instead human errors should be thrown as HTTPError

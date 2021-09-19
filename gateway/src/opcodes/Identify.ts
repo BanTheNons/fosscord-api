@@ -1,5 +1,5 @@
-import { CLOSECODES, Payload, OPCODES } from "../util/Constants";
-import WebSocket from "../util/WebSocket";
+import { CLOSECODES, Payload, OPCODES } from "@fosscord/gateway/util/Constants";
+import WebSocket from "@fosscord/gateway/util/WebSocket";
 import {
 	Channel,
 	checkToken,
@@ -8,18 +8,23 @@ import {
 	Member,
 	ReadyEventData,
 	User,
+	Session,
 	EVENTEnum,
 	Config,
 	dbConnection,
+	PublicMemberProjection,
+	PublicMember,
+	ChannelType,
+	PublicUser,
 } from "@fosscord/util";
 import { setupListener } from "../listener/listener";
 import { IdentifySchema } from "../schema/Identify";
-import { Send } from "../util/Send";
+import { Send } from "@fosscord/gateway/util/Send";
 // import experiments from "./experiments.json";
 const experiments: any = [];
 import { check } from "./instanceOf";
-import { Like } from "../../../util/node_modules/typeorm";
-import { Recipient } from "../../../util/dist/entities/Recipient";
+import { Recipient } from "@fosscord/util";
+import { genSessionId } from "@fosscord/gateway/util/SessionUtils";
 
 // TODO: bot sharding
 // TODO: check priviliged intents
@@ -45,43 +50,94 @@ export async function onIdentify(this: WebSocket, data: Payload) {
 		this.shard_id = identify.shard[0];
 		this.shard_count = identify.shard[1];
 		if (
-			!this.shard_count ||
-			!this.shard_id ||
+			this.shard_count == null ||
+			this.shard_id == null ||
 			this.shard_id >= this.shard_count ||
 			this.shard_id < 0 ||
 			this.shard_count <= 0
 		) {
+			console.log(identify.shard);
 			return this.close(CLOSECODES.Invalid_shard);
 		}
 	}
+	var users: PublicUser[] = [];
 
 	const members = await Member.find({
 		where: { id: this.user_id },
-		relations: ["guild", "guild.channels", "guild.emojis", "guild.roles", "guild.stickers", "user", "roles"],
+		relations: [
+			"guild",
+			"guild.channels",
+			"guild.emojis",
+			"guild.roles",
+			"guild.stickers",
+			"user",
+			"roles",
+		],
 	});
-	const merged_members = members.map((x: any) => {
-		return [x];
-	}) as Member[][];
+	const merged_members = members.map((x: Member) => {
+		return [
+			{
+				...x,
+				roles: x.roles.map((x) => x.id),
+				settings: undefined,
+				guild: undefined,
+			},
+		];
+	}) as PublicMember[][];
 	const guilds = members.map((x) => ({ ...x.guild, joined_at: x.joined_at }));
 	const user_guild_settings_entries = members.map((x) => x.settings);
 
 	const recipients = await Recipient.find({
-		where: { id: this.user_id },
-		relations: ["channel", "channel.recipients"],
+		where: { user_id: this.user_id, closed: false },
+		relations: ["channel", "channel.recipients", "channel.recipients.user"],
+		// TODO: public user selection
 	});
-	const channels = recipients.map((x) => x.channel);
-	const user = await User.findOneOrFail({ id: this.user_id });
+	const channels = recipients.map((x) => {
+		// @ts-ignore
+		x.channel.recipients = x.channel.recipients?.map((x) => x.user);
+		//TODO is this needed? check if users in group dm that are not friends are sent in the READY event
+		//users = users.concat(x.channel.recipients);
+		if (x.channel.isDm()) {
+			x.channel.recipients = x.channel.recipients!.filter((x) => x.id !== this.user_id);
+		}
+		return x.channel;
+	});
+	const user = await User.findOneOrFail({
+		where: { id: this.user_id },
+		relations: ["relationships", "relationships.to"],
+	});
 	if (!user) return this.close(CLOSECODES.Authentication_failed);
 
-	const public_user = {
-		username: user.username,
-		discriminator: user.discriminator,
-		id: user.id,
-		public_flags: user.public_flags,
-		avatar: user.avatar,
-		bot: user.bot,
-		bio: user.bio,
-	};
+	for (let relation of user.relationships) {
+		const related_user = relation.to
+		const public_related_user = {
+			username: related_user.username,
+			discriminator: related_user.discriminator,
+			id: related_user.id,
+			public_flags: related_user.public_flags,
+			avatar: related_user.avatar,
+			bot: related_user.bot,
+			bio: related_user.bio,
+		};
+		users.push(public_related_user);
+	}
+
+	const session_id = genSessionId();
+	this.session_id = session_id; //Set the session of the WebSocket object
+	const session = new Session({
+		user_id: this.user_id,
+		session_id: session_id,
+		status: "online", //does the session always start as online?
+		client_info: {
+			//TODO read from identity
+			client: "desktop",
+			os: "linux",
+			version: 0,
+		},
+	});
+
+	//We save the session and we delete it when the websocket is closed
+	await session.save();
 
 	const privateUser = {
 		avatar: user.avatar,
@@ -112,17 +168,14 @@ export async function onIdentify(this: WebSocket, data: Payload) {
 		// @ts-ignore
 		guilds: guilds.map((x) => {
 			// @ts-ignore
-			x.guild_hashes = {
-				channels: { omitted: false, hash: "y4PV2fZ0gmo" },
-				metadata: { omitted: false, hash: "bs1/ckvud3Y" },
-				roles: { omitted: false, hash: "SxA+c5CaYpo" },
-				version: 1,
-			};
+			x.guild_hashes = {}; // @ts-ignore
+			x.guild_scheduled_events = []; // @ts-ignore
+			x.threads = [];
 			return x;
 		}),
 		guild_experiments: [], // TODO
 		geo_ordered_rtc_regions: [], // TODO
-		relationships: user.relationships,
+		relationships: user.relationships.map((x) => x.toPublicRelationship()),
 		read_state: {
 			// TODO
 			entries: [],
@@ -135,7 +188,7 @@ export async function onIdentify(this: WebSocket, data: Payload) {
 			version: 642,
 		},
 		private_channels: channels,
-		session_id: "", // TODO
+		session_id: session_id,
 		analytics_token: "", // TODO
 		connected_accounts: [], // TODO
 		consents: {
@@ -148,7 +201,7 @@ export async function onIdentify(this: WebSocket, data: Payload) {
 		// @ts-ignore
 		experiments: experiments, // TODO
 		guild_join_requests: [], // TODO what is this?
-		users: [public_user].unique(), // TODO
+		users: users.unique(),
 		merged_members: merged_members,
 		// shard // TODO: only for bots sharding
 		// application // TODO for applications
@@ -163,6 +216,11 @@ export async function onIdentify(this: WebSocket, data: Payload) {
 		s: this.sequence++,
 		d,
 	});
+
+	//TODO send READY_SUPPLEMENTAL
+	//TODO send GUILD_MEMBER_LIST_UPDATE
+	//TODO send SESSIONS_REPLACE
+	//TODO send VOICE_STATE_UPDATE to let the client know if another device is already connected to a voice channel
 
 	await setupListener.call(this);
 }

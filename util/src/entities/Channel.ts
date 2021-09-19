@@ -1,12 +1,13 @@
-import { Column, Entity, JoinColumn, JoinTable, ManyToMany, ManyToOne, OneToMany, RelationId } from "typeorm";
+import { Column, Entity, JoinColumn, ManyToOne, OneToMany, RelationId } from "typeorm";
 import { BaseClass } from "./BaseClass";
 import { Guild } from "./Guild";
-import { Message } from "./Message";
-import { User } from "./User";
+import { PublicUserProjection, User } from "./User";
 import { HTTPError } from "lambert-server";
-import { emitEvent, getPermission, Snowflake } from "../util";
-import { ChannelCreateEvent } from "../interfaces";
+import { containsAll, emitEvent, getPermission, Snowflake, trimSpecial } from "../util";
+import { ChannelCreateEvent, ChannelRecipientRemoveEvent } from "../interfaces";
 import { Recipient } from "./Recipient";
+import { DmChannelDTO } from "../dtos";
+import { Message } from "./Message";
 
 export enum ChannelType {
 	GUILD_TEXT = 0, // a text channel within a server
@@ -16,6 +17,11 @@ export enum ChannelType {
 	GUILD_CATEGORY = 4, // an organizational category that contains up to 50 channels
 	GUILD_NEWS = 5, // a channel that users can follow and crosspost into their own server
 	GUILD_STORE = 6, // a channel in which game developers can sell their game on Discord
+	// TODO: what are channel types between 7-9?
+	GUILD_NEWS_THREAD = 10, // a temporary sub-channel within a GUILD_NEWS channel
+	GUILD_PUBLIC_THREAD = 11, // a temporary sub-channel within a GUILD_TEXT channel
+	GUILD_PRIVATE_THREAD = 12, // a temporary sub-channel within a GUILD_TEXT channel that is only viewable by those invited and those with the MANAGE_THREADS permission
+	GUILD_STAGE_VOICE = 13, // a voice channel for hosting events with an audience
 }
 
 @Entity("channels")
@@ -23,8 +29,11 @@ export class Channel extends BaseClass {
 	@Column()
 	created_at: Date;
 
-	@Column()
-	name: string;
+	@Column({ nullable: true })
+	name?: string;
+
+	@Column({ type: 'text', nullable: true })
+	icon?: string | null;
 
 	@Column({ type: "simple-enum", enum: ChannelType })
 	type: ChannelType;
@@ -33,12 +42,7 @@ export class Channel extends BaseClass {
 	recipients?: Recipient[];
 
 	@Column({ nullable: true })
-	@RelationId((channel: Channel) => channel.last_message)
 	last_message_id: string;
-
-	@JoinColumn({ name: "last_message_id" })
-	@ManyToOne(() => Message)
-	last_message?: Message;
 
 	@Column({ nullable: true })
 	@RelationId((channel: Channel) => channel.guild)
@@ -56,6 +60,7 @@ export class Channel extends BaseClass {
 	@ManyToOne(() => Channel)
 	parent?: Channel;
 
+	// only for group dms
 	@Column({ nullable: true })
 	@RelationId((channel: Channel) => channel.owner)
 	owner_id: string;
@@ -70,11 +75,11 @@ export class Channel extends BaseClass {
 	@Column({ nullable: true })
 	default_auto_archive_duration?: number;
 
-	@Column()
-	position: number;
+	@Column({ nullable: true })
+	position?: number;
 
-	@Column({ type: "simple-json" })
-	permission_overwrites: ChannelPermissionOverwrite[];
+	@Column({ type: "simple-json", nullable: true })
+	permission_overwrites?: ChannelPermissionOverwrite[];
 
 	@Column({ nullable: true })
 	video_quality_mode?: number;
@@ -94,7 +99,6 @@ export class Channel extends BaseClass {
 	@Column({ nullable: true })
 	topic?: string;
 
-	// TODO: DM channel
 	static async createChannel(
 		channel: Partial<Channel>,
 		user_id: string = "0",
@@ -144,17 +148,128 @@ export class Channel extends BaseClass {
 		};
 
 		await Promise.all([
-			Channel.insert(channel),
+			new Channel(channel).save(),
 			!opts?.skipEventEmit
 				? emitEvent({
-						event: "CHANNEL_CREATE",
-						data: channel,
-						guild_id: channel.guild_id,
-				  } as ChannelCreateEvent)
+					event: "CHANNEL_CREATE",
+					data: channel,
+					guild_id: channel.guild_id,
+				} as ChannelCreateEvent)
 				: Promise.resolve(),
 		]);
 
 		return channel;
+	}
+
+	static async createDMChannel(recipients: string[], creator_user_id: string, name?: string) {
+		recipients = recipients.unique().filter((x) => x !== creator_user_id);
+		const otherRecipientsUsers = await User.find({ where: recipients.map((x) => ({ id: x })) });
+
+		// TODO: check config for max number of recipients
+		if (otherRecipientsUsers.length !== recipients.length) {
+			throw new HTTPError("Recipient/s not found");
+		}
+
+		const type = recipients.length === 1 ? ChannelType.DM : ChannelType.GROUP_DM;
+
+		let channel = null;
+
+		const channelRecipients = [...recipients, creator_user_id]
+
+		const userRecipients = await Recipient.find({ where: { user_id: creator_user_id }, relations: ["channel", "channel.recipients"] })
+
+		for (let ur of userRecipients) {
+			let re = ur.channel.recipients!.map(r => r.user_id)
+			if (re.length === channelRecipients.length) {
+				if (containsAll(re, channelRecipients)) {
+					if (channel == null) {
+						channel = ur.channel
+						await ur.assign({ closed: false }).save()
+					}
+				}
+			}
+		}
+
+		if (channel == null) {
+			name = trimSpecial(name);
+
+			channel = await new Channel({
+				name,
+				type,
+				owner_id: (type === ChannelType.DM ? undefined : creator_user_id),
+				created_at: new Date(),
+				last_message_id: null,
+				recipients: channelRecipients.map((x) => new Recipient({ user_id: x, closed: !(type === ChannelType.GROUP_DM || x === creator_user_id) })),
+			}).save();
+		}
+
+
+		const channel_dto = await DmChannelDTO.from(channel)
+
+		if (type === ChannelType.GROUP_DM) {
+
+			for (let recipient of channel.recipients!) {
+				await emitEvent({
+					event: "CHANNEL_CREATE",
+					data: channel_dto.excludedRecipients([recipient.user_id]),
+					user_id: recipient.user_id
+				})
+			}
+		} else {
+			await emitEvent({ event: "CHANNEL_CREATE", data: channel_dto, user_id: creator_user_id });
+		}
+
+		return channel_dto.excludedRecipients([creator_user_id])
+	}
+
+	static async removeRecipientFromChannel(channel: Channel, user_id: string) {
+		await Recipient.delete({ channel_id: channel.id, user_id: user_id })
+		channel.recipients = channel.recipients?.filter(r => r.user_id !== user_id)
+
+		if (channel.recipients?.length === 0) {
+			await Channel.deleteChannel(channel);
+			await emitEvent({
+				event: "CHANNEL_DELETE",
+				data: await DmChannelDTO.from(channel, [user_id]),
+				user_id: user_id
+			});
+			return
+		}
+
+		await emitEvent({
+			event: "CHANNEL_DELETE",
+			data: await DmChannelDTO.from(channel, [user_id]),
+			user_id: user_id
+		});
+
+		//If the owner leave we make the first recipient in the list the new owner
+		if (channel.owner_id === user_id) {
+			channel.owner_id = channel.recipients!.find(r => r.user_id !== user_id)!.user_id //Is there a criteria to choose the new owner?
+			await emitEvent({
+				event: "CHANNEL_UPDATE",
+				data: await DmChannelDTO.from(channel, [user_id]),
+				channel_id: channel.id
+			});
+		}
+
+		await channel.save()
+
+		await emitEvent({
+			event: "CHANNEL_RECIPIENT_REMOVE", data: {
+				channel_id: channel.id,
+				user: await User.findOneOrFail({ where: { id: user_id }, select: PublicUserProjection })
+			}, channel_id: channel.id
+		} as ChannelRecipientRemoveEvent);
+	}
+
+	static async deleteChannel(channel: Channel) {
+		await Message.delete({ channel_id: channel.id }) //TODO we should also delete the attachments from the cdn but to do that we need to move cdn.ts in util
+		//TODO before deleting the channel we should check and delete other relations
+		await Channel.delete({ id: channel.id })
+	}
+
+	isDm() {
+		return this.type === ChannelType.DM || this.type === ChannelType.GROUP_DM
 	}
 }
 

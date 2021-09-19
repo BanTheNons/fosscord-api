@@ -10,7 +10,7 @@ import { VoiceState } from "../entities/VoiceState";
 import { ApplicationCommand } from "../entities/Application";
 import { Interaction } from "./Interaction";
 import { ConnectedAccount } from "../entities/ConnectedAccount";
-import { Relationship } from "../entities/Relationship";
+import { Relationship, RelationshipType } from "../entities/Relationship";
 import { Presence } from "./Presence";
 
 export interface Event {
@@ -26,6 +26,12 @@ export interface Event {
 
 export interface InvalidatedEvent extends Event {
 	event: "INVALIDATED";
+}
+
+export interface PublicRelationship {
+	id: string;
+	user: PublicUser;
+	type: RelationshipType;
 }
 
 // ! END Custom Events that shouldn't get sent to the client but processed by the server
@@ -72,7 +78,7 @@ export interface ReadyEventData {
 	guild_join_requests?: any[]; // ? what is this? this is new
 	shard?: [number, number];
 	user_settings?: UserSettings;
-	relationships?: Relationship[]; // TODO
+	relationships?: PublicRelationship[]; // TODO
 	read_state: {
 		entries: any[]; // TODO
 		partial: boolean;
@@ -87,7 +93,7 @@ export interface ReadyEventData {
 		id: string;
 		flags: string;
 	};
-	merged_members?: Omit<Member, "settings" | "user">[][];
+	merged_members?: PublicMember[][];
 	// probably all users who the user is in contact with
 	users?: PublicUser[];
 }
@@ -121,10 +127,32 @@ export interface ChannelPinsUpdateEvent extends Event {
 	};
 }
 
+export interface ChannelRecipientAddEvent extends Event {
+	event: "CHANNEL_RECIPIENT_ADD";
+	data: {
+		channel_id: string;
+		user: User;
+	};
+}
+
+export interface ChannelRecipientRemoveEvent extends Event {
+	event: "CHANNEL_RECIPIENT_REMOVE";
+	data: {
+		channel_id: string;
+		user: User;
+	};
+}
+
 export interface GuildCreateEvent extends Event {
 	event: "GUILD_CREATE";
 	data: Guild & {
 		joined_at: Date;
+		// TODO: add them to guild
+		guild_scheduled_events: never[];
+		guild_hashes: {};
+		presences: never[];
+		stage_instances: never[];
+		threads: never[];
 	};
 }
 
@@ -406,7 +434,7 @@ export interface MessageAckEvent extends Event {
 
 export interface RelationshipAddEvent extends Event {
 	event: "RELATIONSHIP_ADD";
-	data: Relationship & {
+	data: PublicRelationship & {
 		should_notify?: boolean;
 		user: PublicUser;
 	};
@@ -414,8 +442,55 @@ export interface RelationshipAddEvent extends Event {
 
 export interface RelationshipRemoveEvent extends Event {
 	event: "RELATIONSHIP_REMOVE";
-	data: Omit<Relationship, "nickname">;
+	data: Omit<PublicRelationship, "nickname">;
 }
+
+export type EventData =
+	| InvalidatedEvent
+	| ReadyEvent
+	| ChannelCreateEvent
+	| ChannelUpdateEvent
+	| ChannelDeleteEvent
+	| ChannelPinsUpdateEvent
+	| ChannelRecipientAddEvent
+	| ChannelRecipientRemoveEvent
+	| GuildCreateEvent
+	| GuildUpdateEvent
+	| GuildDeleteEvent
+	| GuildBanAddEvent
+	| GuildBanRemoveEvent
+	| GuildEmojiUpdateEvent
+	| GuildIntegrationUpdateEvent
+	| GuildMemberAddEvent
+	| GuildMemberRemoveEvent
+	| GuildMemberUpdateEvent
+	| GuildMembersChunkEvent
+	| GuildRoleCreateEvent
+	| GuildRoleUpdateEvent
+	| GuildRoleDeleteEvent
+	| InviteCreateEvent
+	| InviteDeleteEvent
+	| MessageCreateEvent
+	| MessageUpdateEvent
+	| MessageDeleteEvent
+	| MessageDeleteBulkEvent
+	| MessageReactionAddEvent
+	| MessageReactionRemoveEvent
+	| MessageReactionRemoveAllEvent
+	| MessageReactionRemoveEmojiEvent
+	| PresenceUpdateEvent
+	| TypingStartEvent
+	| UserUpdateEvent
+	| VoiceStateUpdateEvent
+	| VoiceServerUpdateEvent
+	| WebhooksUpdateEvent
+	| ApplicationCommandCreateEvent
+	| ApplicationCommandUpdateEvent
+	| ApplicationCommandDeleteEvent
+	| InteractionCreateEvent
+	| MessageAckEvent
+	| RelationshipAddEvent
+	| RelationshipRemoveEvent;
 
 // located in collection events
 
@@ -425,6 +500,8 @@ export enum EVENTEnum {
 	ChannelUpdate = "CHANNEL_UPDATE",
 	ChannelDelete = "CHANNEL_DELETE",
 	ChannelPinsUpdate = "CHANNEL_PINS_UPDATE",
+	ChannelRecipientAdd = "CHANNEL_RECIPIENT_ADD",
+	ChannelRecipientRemove = "CHANNEL_RECIPIENT_REMOVE",
 	GuildCreate = "GUILD_CREATE",
 	GuildUpdate = "GUILD_UPDATE",
 	GuildDelete = "GUILD_DELETE",
@@ -468,6 +545,8 @@ export type EVENT =
 	| "CHANNEL_UPDATE"
 	| "CHANNEL_DELETE"
 	| "CHANNEL_PINS_UPDATE"
+	| "CHANNEL_RECIPIENT_ADD"
+	| "CHANNEL_RECIPIENT_REMOVE"
 	| "GUILD_CREATE"
 	| "GUILD_UPDATE"
 	| "GUILD_DELETE"

@@ -2,21 +2,32 @@ import { Request, Response, Router } from "express";
 import {
 	Role,
 	getPermission,
-	Snowflake,
 	Member,
 	GuildRoleCreateEvent,
 	GuildRoleUpdateEvent,
 	GuildRoleDeleteEvent,
 	emitEvent,
-	Config
+	Config,
+	DiscordApiErrors
 } from "@fosscord/util";
 import { HTTPError } from "lambert-server";
-
-import { check } from "../../../util/instanceOf";
-import { RoleModifySchema } from "../../../schema/Roles";
-import { DiscordApiErrors } from "../../../util/Constants";
+import { route } from "@fosscord/api";
 
 const router: Router = Router();
+
+export interface RoleModifySchema {
+	name?: string;
+	permissions?: bigint;
+	color?: number;
+	hoist?: boolean; // whether the role should be displayed separately in the sidebar
+	mentionable?: boolean; // whether the role should be mentionable
+	position?: number;
+}
+
+export type RolePositionUpdateSchema = {
+	id: string;
+	position: number;
+}[];
 
 router.get("/", async (req: Request, res: Response) => {
 	const guild_id = req.params.guild_id;
@@ -28,32 +39,30 @@ router.get("/", async (req: Request, res: Response) => {
 	return res.json(roles);
 });
 
-router.post("/", check(RoleModifySchema), async (req: Request, res: Response) => {
+router.post("/", route({ body: "RoleModifySchema", permission: "MANAGE_ROLES" }), async (req: Request, res: Response) => {
 	const guild_id = req.params.guild_id;
 	const body = req.body as RoleModifySchema;
-
-	const perms = await getPermission(req.user_id, guild_id);
-	perms.hasThrow("MANAGE_ROLES");
 
 	const role_count = await Role.count({ guild_id });
 	const { maxRoles } = Config.get().limits.guild;
 
 	if (role_count > maxRoles) throw DiscordApiErrors.MAXIMUM_ROLES.withParams(maxRoles);
 
-	const role = {
+	const role = new Role({
+		// values before ...body are default and can be overriden
 		position: 0,
 		hoist: false,
-		color: 0, // default value
+		color: 0,
+		mentionable: false,
 		...body,
-		id: Snowflake.generate(),
 		guild_id: guild_id,
 		managed: false,
-		permissions: String(perms.bitfield & (body.permissions || 0n)),
+		permissions: String(req.permission!.bitfield & (body.permissions || 0n)),
 		tags: undefined
-	};
+	});
 
 	await Promise.all([
-		Role.insert(role),
+		role.save(),
 		emitEvent({
 			event: "GUILD_ROLE_CREATE",
 			guild_id,
@@ -67,13 +76,10 @@ router.post("/", check(RoleModifySchema), async (req: Request, res: Response) =>
 	res.json(role);
 });
 
-router.delete("/:role_id", async (req: Request, res: Response) => {
+router.delete("/:role_id", route({ permission: "MANAGE_ROLES" }), async (req: Request, res: Response) => {
 	const guild_id = req.params.guild_id;
 	const { role_id } = req.params;
 	if (role_id === guild_id) throw new HTTPError("You can't delete the @everyone role");
-
-	const permissions = await getPermission(req.user_id, guild_id);
-	permissions.hasThrow("MANAGE_ROLES");
 
 	await Promise.all([
 		Role.delete({
@@ -95,14 +101,11 @@ router.delete("/:role_id", async (req: Request, res: Response) => {
 
 // TODO: check role hierarchy
 
-router.patch("/:role_id", check(RoleModifySchema), async (req: Request, res: Response) => {
+router.patch("/:role_id", route({ body: "RoleModifySchema", permission: "MANAGE_ROLES" }), async (req: Request, res: Response) => {
 	const { role_id, guild_id } = req.params;
 	const body = req.body as RoleModifySchema;
 
-	const perms = await getPermission(req.user_id, guild_id);
-	perms.hasThrow("MANAGE_ROLES");
-
-	const role = new Role({ ...body, id: role_id, guild_id, permissions: String(perms.bitfield & (body.permissions || 0n)) });
+	const role = new Role({ ...body, id: role_id, guild_id, permissions: String(req.permission!.bitfield & (body.permissions || 0n)) });
 
 	await Promise.all([
 		role.save(),
@@ -117,6 +120,33 @@ router.patch("/:role_id", check(RoleModifySchema), async (req: Request, res: Res
 	]);
 
 	res.json(role);
+});
+
+router.patch("/", route({ body: "RolePositionUpdateSchema" }), async (req: Request, res: Response) => {
+	const { guild_id } = req.params;
+	const body = req.body as RolePositionUpdateSchema;
+
+	const perms = await getPermission(req.user_id, guild_id);
+	perms.hasThrow("MANAGE_ROLES");
+
+	await Promise.all(body.map(async (x) => Role.update({ guild_id, id: x.id }, { position: x.position })));
+
+	const roles = await Role.find({ where: body.map((x) => ({ id: x.id, guild_id })) });
+
+	await Promise.all(
+		roles.map((x) =>
+			emitEvent({
+				event: "GUILD_ROLE_UPDATE",
+				guild_id,
+				data: {
+					guild_id,
+					role: x
+				}
+			} as GuildRoleUpdateEvent)
+		)
+	);
+
+	res.json(roles);
 });
 
 export default router;

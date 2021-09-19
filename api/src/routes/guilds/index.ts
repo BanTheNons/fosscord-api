@@ -1,14 +1,26 @@
 import { Router, Request, Response } from "express";
-import { Role, Guild, Snowflake, Config, User, Member, Channel } from "@fosscord/util";
-import { check } from "./../../util/instanceOf";
-import { GuildCreateSchema } from "../../schema/Guild";
-import { DiscordApiErrors } from "../../util/Constants";
+import { Role, Guild, Snowflake, Config, Member, Channel, DiscordApiErrors, handleFile } from "@fosscord/util";
+import { route } from "@fosscord/api";
+import { ChannelModifySchema } from "../channels/#channel_id";
 
 const router: Router = Router();
 
+export interface GuildCreateSchema {
+	/**
+	 * @maxLength 100
+	 */
+	name: string;
+	region?: string;
+	icon?: string | null;
+	channels?: ChannelModifySchema[];
+	guild_template_code?: string;
+	system_channel_id?: string;
+	rules_channel_id?: string;
+}
+
 //TODO: create default channel
 
-router.post("/", check(GuildCreateSchema), async (req: Request, res: Response) => {
+router.post("/", route({ body: "GuildCreateSchema" }), async (req: Request, res: Response) => {
 	const body = req.body as GuildCreateSchema;
 
 	if (req.user_id !== process.env.INSTANCE_OWNER_ID) {
@@ -21,47 +33,50 @@ router.post("/", check(GuildCreateSchema), async (req: Request, res: Response) =
 
 	const guild_id = Snowflake.generate();
 
-	const [guild, role] = await Promise.all([
-		Guild.insert({
-			name: body.name,
-			region: Config.get().regions.default,
-			owner_id: req.user_id,
-			afk_timeout: 300,
-			default_message_notifications: 0,
-			explicit_content_filter: 0,
-			features: [],
-			id: guild_id,
-			max_members: 250000,
-			max_presences: 250000,
-			max_video_channel_users: 25,
-			presence_count: 0,
-			member_count: 0, // will automatically be increased by addMember()
-			mfa_level: 0,
-			preferred_locale: "en-US",
-			premium_subscription_count: 0,
-			premium_tier: 0,
-			system_channel_flags: 0,
-			unavailable: false,
-			verification_level: 0,
-			welcome_screen: {
-				enabled: false,
-				description: "No description",
-				welcome_channels: []
-			},
-			widget_enabled: false
-		}),
-		Role.insert({
-			id: guild_id,
-			guild_id: guild_id,
-			color: 0,
-			hoist: false,
-			managed: false,
-			mentionable: false,
-			name: "@everyone",
-			permissions: String("2251804225"),
-			position: 0
-		})
-	]);
+	await Guild.insert({
+		name: body.name,
+		icon: await handleFile(`/icons/${guild_id}`, body.icon as string),
+		region: Config.get().regions.default,
+		owner_id: req.user_id,
+		afk_timeout: 300,
+		default_message_notifications: 0,
+		explicit_content_filter: 0,
+		features: [],
+		id: guild_id,
+		max_members: 250000,
+		max_presences: 250000,
+		max_video_channel_users: 25,
+		presence_count: 0,
+		member_count: 0, // will automatically be increased by addMember()
+		mfa_level: 0,
+		preferred_locale: "en-US",
+		premium_subscription_count: 0,
+		premium_tier: 0,
+		system_channel_flags: 0,
+		unavailable: false,
+		nsfw: false,
+		nsfw_level: 0,
+		verification_level: 0,
+		welcome_screen: {
+			enabled: false,
+			description: "No description",
+			welcome_channels: []
+		},
+		widget_enabled: false
+	});
+
+	// we have to create the role _after_ the guild because else we would get a "SQLITE_CONSTRAINT: FOREIGN KEY constraint failed" error
+	await Role.insert({
+		id: guild_id,
+		guild_id: guild_id,
+		color: 0,
+		hoist: false,
+		managed: false,
+		mentionable: false,
+		name: "@everyone",
+		permissions: String("2251804225"),
+		position: 0
+	});
 
 	if (!body.channels || !body.channels.length) body.channels = [{ id: "01", type: 0, name: "general" }];
 
@@ -90,7 +105,7 @@ router.post("/", check(GuildCreateSchema), async (req: Request, res: Response) =
 	);
 
 	await Member.addToGuild(req.user_id, guild_id);
-	if (process.env.INSTANCE_OWNER_ID) Member.addToGuild(process.env.INSTANCE_OWNER_ID, guild.id);
+	if (process.env.INSTANCE_OWNER_ID) Member.addToGuild(process.env.INSTANCE_OWNER_ID, guild_id);
 
 	res.status(201).json({ id: guild_id });
 });

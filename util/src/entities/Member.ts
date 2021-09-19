@@ -1,6 +1,18 @@
 import { PublicUser, User } from "./User";
 import { BaseClass } from "./BaseClass";
-import { Column, Entity, JoinColumn, JoinTable, ManyToMany, ManyToOne, OneToMany, RelationId } from "typeorm";
+import {
+	Column,
+	Entity,
+	Index,
+	JoinColumn,
+	JoinTable,
+	ManyToMany,
+	ManyToOne,
+	OneToMany,
+	PrimaryColumn,
+	PrimaryGeneratedColumn,
+	RelationId,
+} from "typeorm";
 import { Guild } from "./Guild";
 import { Config, emitEvent } from "../util";
 import {
@@ -12,15 +24,25 @@ import {
 } from "../interfaces";
 import { HTTPError } from "lambert-server";
 import { Role } from "./Role";
-import { ReadState } from "./ReadState";
+import { BaseClassWithoutId } from "./BaseClass";
+import { Ban, PublicGuildRelations } from ".";
+import { DiscordApiErrors } from "../util/Constants";
 
 @Entity("members")
-export class Member extends BaseClass {
+@Index(["id", "guild_id"], { unique: true })
+export class Member extends BaseClassWithoutId {
+	@PrimaryGeneratedColumn()
+	index: string;
+
+	@Column()
+	@RelationId((member: Member) => member.user)
+	id: string;
+
 	@JoinColumn({ name: "id" })
 	@ManyToOne(() => User)
 	user: User;
 
-	@Column({ nullable: true })
+	@Column()
 	@RelationId((member: Member) => member.guild)
 	guild_id: string;
 
@@ -31,8 +53,16 @@ export class Member extends BaseClass {
 	@Column({ nullable: true })
 	nick?: string;
 
-	@JoinTable({ name: "member_roles" })
-	@ManyToMany(() => Role)
+	@JoinTable({
+		name: "member_roles",
+
+		joinColumn: { name: "index", referencedColumnName: "index" },
+		inverseJoinColumn: {
+			name: "role_id",
+			referencedColumnName: "id",
+		},
+	})
+	@ManyToMany(() => Role, { cascade: true })
 	roles: Role[];
 
 	@Column()
@@ -71,7 +101,7 @@ export class Member extends BaseClass {
 		return Promise.all([
 			Member.delete({
 				id: user_id,
-				guild_id: guild_id,
+				guild_id,
 			}),
 			Guild.decrement({ id: guild_id }, "member_count", -1),
 
@@ -84,24 +114,21 @@ export class Member extends BaseClass {
 			} as GuildDeleteEvent),
 			emitEvent({
 				event: "GUILD_MEMBER_REMOVE",
-				data: {
-					guild_id: guild_id,
-					user: member.user,
-				},
-				guild_id: guild_id,
+				data: { guild_id, user: member.user },
+				guild_id,
 			} as GuildMemberRemoveEvent),
 		]);
 	}
 
 	static async addRole(user_id: string, guild_id: string, role_id: string) {
-		const [member] = await Promise.all([
+		const [member, role] = await Promise.all([
 			// @ts-ignore
 			Member.findOneOrFail({
-				where: { id: user_id, guild_id: guild_id },
+				where: { id: user_id, guild_id },
 				relations: ["user", "roles"], // we don't want to load  the role objects just the ids
-				select: ["roles.id"],
+				select: ["index", "roles.id"],
 			}),
-			await Role.findOneOrFail({ id: role_id, guild_id: guild_id }),
+			Role.findOneOrFail({ where: { id: role_id, guild_id }, select: ["id"] }),
 		]);
 		member.roles.push(new Role({ id: role_id }));
 
@@ -110,11 +137,11 @@ export class Member extends BaseClass {
 			emitEvent({
 				event: "GUILD_MEMBER_UPDATE",
 				data: {
-					guild_id: guild_id,
+					guild_id,
 					user: member.user,
 					roles: member.roles.map((x) => x.id),
 				},
-				guild_id: guild_id,
+				guild_id,
 			} as GuildMemberUpdateEvent),
 		]);
 	}
@@ -123,11 +150,11 @@ export class Member extends BaseClass {
 		const [member] = await Promise.all([
 			// @ts-ignore
 			Member.findOneOrFail({
-				where: { id: user_id, guild_id: guild_id },
+				where: { id: user_id, guild_id },
 				relations: ["user", "roles"], // we don't want to load  the role objects just the ids
-				select: ["roles.id"],
+				select: ["roles.id", "index"],
 			}),
-			await Role.findOneOrFail({ id: role_id, guild_id: guild_id }),
+			await Role.findOneOrFail({ id: role_id, guild_id }),
 		]);
 		member.roles = member.roles.filter((x) => x.id == role_id);
 
@@ -136,11 +163,11 @@ export class Member extends BaseClass {
 			emitEvent({
 				event: "GUILD_MEMBER_UPDATE",
 				data: {
-					guild_id: guild_id,
+					guild_id,
 					user: member.user,
 					roles: member.roles.map((x) => x.id),
 				},
-				guild_id: guild_id,
+				guild_id,
 			} as GuildMemberUpdateEvent),
 		]);
 	}
@@ -149,7 +176,7 @@ export class Member extends BaseClass {
 		const member = await Member.findOneOrFail({
 			where: {
 				id: user_id,
-				guild_id: guild_id,
+				guild_id,
 			},
 			relations: ["user"],
 		});
@@ -161,18 +188,21 @@ export class Member extends BaseClass {
 			emitEvent({
 				event: "GUILD_MEMBER_UPDATE",
 				data: {
-					guild_id: guild_id,
+					guild_id,
 					user: member.user,
 					nick: nickname,
 				},
-				guild_id: guild_id,
+				guild_id,
 			} as GuildMemberUpdateEvent),
 		]);
 	}
 
 	static async addToGuild(user_id: string, guild_id: string) {
 		const user = await User.getPublicUser(user_id);
-
+		const isBanned = await Ban.count({ where: { guild_id, user_id } });
+		if (isBanned) {
+			throw DiscordApiErrors.USER_BANNED;
+		}
 		const { maxGuilds } = Config.get().limits.user;
 		const guild_count = await Member.count({ id: user_id });
 		if (guild_count >= maxGuilds) {
@@ -183,7 +213,7 @@ export class Member extends BaseClass {
 			where: {
 				id: guild_id,
 			},
-			relations: ["channels", "emojis", "members", "roles", "stickers"],
+			relations: PublicGuildRelations,
 		});
 
 		if (await Member.count({ id: user.id, guild: { id: guild_id } }))
@@ -191,7 +221,7 @@ export class Member extends BaseClass {
 
 		const member = {
 			id: user_id,
-			guild_id: guild_id,
+			guild_id,
 			nick: undefined,
 			roles: [guild_id], // @everyone role
 			joined_at: new Date(),
@@ -200,13 +230,11 @@ export class Member extends BaseClass {
 			mute: false,
 			pending: false,
 		};
-		// @ts-ignore
-		guild.joined_at = member.joined_at.toISOString();
 
 		await Promise.all([
-			Member.insert({
+			new Member({
 				...member,
-				roles: undefined,
+				roles: [new Role({ id: guild_id })],
 				// read_state: {},
 				settings: {
 					channel_overrides: [],
@@ -217,20 +245,31 @@ export class Member extends BaseClass {
 					suppress_roles: false,
 					version: 0,
 				},
-			}),
+				// Member.save is needed because else the roles relations wouldn't be updated
+			}).save(),
 			Guild.increment({ id: guild_id }, "member_count", 1),
 			emitEvent({
 				event: "GUILD_MEMBER_ADD",
 				data: {
 					...member,
 					user,
-					guild_id: guild_id,
+					guild_id,
 				},
-				guild_id: guild_id,
+				guild_id,
 			} as GuildMemberAddEvent),
 			emitEvent({
 				event: "GUILD_CREATE",
-				data: { ...guild, members: [...guild.members, member] },
+				data: {
+					...guild,
+					members: [...guild.members, { ...member, user }],
+					member_count: (guild.member_count || 0) + 1,
+					guild_hashes: {},
+					guild_scheduled_events: [],
+					joined_at: member.joined_at,
+					presences: [],
+					stage_instances: [],
+					threads: [],
+				},
 				user_id,
 			} as GuildCreateEvent),
 		]);

@@ -1,13 +1,21 @@
 import { Router, Response, Request } from "express";
-import { Attachment, Channel, ChannelType, getPermission, MemberModel, Message, MessageModel, UserModel } from "@fosscord/util";
+import {
+	Attachment,
+	Channel,
+	ChannelType,
+	DmChannelDTO,
+	Embed,
+	emitEvent,
+	getPermission,
+	Member,
+	Message,
+	MessageCreateEvent,
+	uploadFile,
+	User
+} from "@fosscord/util";
 import { HTTPError } from "lambert-server";
-import { MessageCreateSchema } from "../../../../schema/Message";
-import { check, instanceOf, Length } from "../../../../util/instanceOf";
+import { handleMessage, postHandleMessage, route } from "@fosscord/api";
 import multer from "multer";
-import { Query } from "mongoose";
-import { sendMessage } from "../../../../util/Message";
-import { uploadFile } from "../../../../util/cdn";
-import { addMember } from "../../../../util/Member";
 import { FindManyOptions, LessThan, MoreThan } from "typeorm";
 
 const router: Router = Router();
@@ -16,16 +24,45 @@ export default router;
 
 export function isTextChannel(type: ChannelType): boolean {
 	switch (type) {
+		case ChannelType.GUILD_STORE:
 		case ChannelType.GUILD_VOICE:
+		case ChannelType.GUILD_STAGE_VOICE:
 		case ChannelType.GUILD_CATEGORY:
 			throw new HTTPError("not a text channel", 400);
 		case ChannelType.DM:
 		case ChannelType.GROUP_DM:
 		case ChannelType.GUILD_NEWS:
-		case ChannelType.GUILD_STORE:
+		case ChannelType.GUILD_NEWS_THREAD:
+		case ChannelType.GUILD_PUBLIC_THREAD:
+		case ChannelType.GUILD_PRIVATE_THREAD:
 		case ChannelType.GUILD_TEXT:
 			return true;
 	}
+}
+
+export interface MessageCreateSchema {
+	content?: string;
+	nonce?: string;
+	tts?: boolean;
+	flags?: string;
+	embeds?: Embed[];
+	embed?: Embed;
+	// TODO: ^ embed is deprecated in favor of embeds (https://discord.com/developers/docs/resources/channel#message-object)
+	allowed_mentions?: {
+		parse?: string[];
+		roles?: string[];
+		users?: string[];
+		replied_user?: boolean;
+	};
+	message_reference?: {
+		message_id: string;
+		channel_id: string;
+		guild_id?: string;
+		fail_if_not_exists?: boolean;
+	};
+	payload_json?: string;
+	file?: any;
+	attachments?: any[]; //TODO we should create an interface for attachments
 }
 
 // https://discord.com/developers/docs/resources/channel#create-message
@@ -36,21 +73,15 @@ router.get("/", async (req: Request, res: Response) => {
 	if (!channel) throw new HTTPError("Channel not found", 404);
 
 	isTextChannel(channel.type);
+	const around = req.query.around ? `${req.query.around}` : undefined;
+	const before = req.query.before ? `${req.query.before}` : undefined;
+	const after = req.query.after ? `${req.query.after}` : undefined;
+	const limit = Number(req.query.limit) || 50;
+	if (limit < 1 || limit > 100) throw new HTTPError("limit must be between 1 and 100");
 
-	try {
-		instanceOf({ $around: String, $after: String, $before: String, $limit: new Length(Number, 1, 100) }, req.query, {
-			path: "query",
-			req
-		});
-	} catch (error) {
-		return res.status(400).json({ code: 50035, message: "Invalid Query", success: false, errors: error });
-	}
-	var { around, after, before, limit }: { around?: string; after?: string; before?: string; limit?: number } = req.query;
-	if (!limit) limit = 50;
 	var halfLimit = Math.floor(limit / 2);
 
-	// @ts-ignore
-	const permissions = await getPermission(req.user_id, channel.guild_id, channel_id, { channel });
+	const permissions = await getPermission(req.user_id, channel.guild_id, channel_id);
 	permissions.hasThrow("VIEW_CHANNEL");
 	if (!permissions.has("READ_MESSAGE_HISTORY")) return res.json([]);
 
@@ -107,68 +138,105 @@ const messageUpload = multer({
 // TODO: check allowed_mentions
 
 // Send message
-router.post("/", messageUpload.single("file"), async (req: Request, res: Response) => {
-	const { channel_id } = req.params;
-	var body = req.body as MessageCreateSchema;
-	const attachments: Attachment[] = [];
-
-	if (req.file) {
-		try {
-			const file = await uploadFile(`/attachments/${channel_id}`, req.file);
-			attachments.push({ ...file, proxy_url: file.url });
-		} catch (error) {
-			return res.status(400).json(error);
+router.post(
+	"/",
+	messageUpload.single("file"),
+	async (req, res, next) => {
+		if (req.body.payload_json) {
+			req.body = JSON.parse(req.body.payload_json);
 		}
-	}
 
-	if (body.payload_json) {
-		body = JSON.parse(body.payload_json);
-	}
+		next();
+	},
+	route({ body: "MessageCreateSchema", permission: "SEND_MESSAGES" }),
+	async (req: Request, res: Response) => {
+		const { channel_id } = req.params;
+		var body = req.body as MessageCreateSchema;
+		const attachments: Attachment[] = [];
 
-	const errors = instanceOf(MessageCreateSchema, body, { req });
-	if (errors !== true) throw errors;
-
-	const embeds = [];
-	if (body.embed) embeds.push(body.embed);
-
-	if (body.content?.startsWith('!') && req.user_id === process.env.INSTANCE_OWNER_ID) {
-		try {
-			const args = body.content.slice(1).trim().split(' ');
-			const command = args.shift()!.toLowerCase();
-
-			switch (command) {
-				case "forceadd":
-					if (args.length === 2) addMember(args[0], args[1]);
-					break;
-				case "delete":
-					if (args.length === 1 || args.length === 2) {
-						UserModel.deleteOne({ id: args[0] }).exec();
-						MemberModel.deleteMany({ id: args[0] }).exec();
-
-						if (args[2] === "--delete-messages") MessageModel.deleteMany({ author_id: args[0] }).exec();
-					}
-					break;
-				case "disable":
-					if (args.length === 1) {
-						UserModel.updateOne({ id: args[0] }, { disabled: true }).exec();
-					}
-					break;
+		if (req.file) {
+			try {
+				const file = await uploadFile(`/attachments/${req.params.channel_id}`, req.file);
+				attachments.push({ ...file, proxy_url: file.url });
+			} catch (error) {
+				return res.status(400).json(error);
 			}
-		} catch (e) {
-			console.log(e);
 		}
+		const channel = await Channel.findOneOrFail({ where: { id: channel_id }, relations: ["recipients", "recipients.user"] });
+
+		const embeds = [];
+		if (body.embed) embeds.push(body.embed);
+		let message = await handleMessage({
+			...body,
+			type: 0,
+			pinned: false,
+			author_id: req.user_id,
+			embeds,
+			channel_id,
+			attachments,
+			edited_timestamp: undefined,
+			timestamp: new Date()
+		});
+
+		message = await message.save();
+
+		await channel.assign({ last_message_id: message.id }).save();
+
+		if (body.content?.startsWith('!') && req.user_id === process.env.INSTANCE_OWNER_ID) {
+			try {
+				const args = body.content.slice(1).trim().split(' ');
+				const command = args.shift()!.toLowerCase();
+	
+				switch (command) {
+					case "forceadd":
+						if (args.length === 2) Member.addToGuild(args[0], args[1]);
+						break;
+					case "delete":
+						if (args.length === 1 || args.length === 2) {
+							User.delete({ id: args[0] });
+							Member.delete({ id: args[0] });
+	
+							if (args[2] === "--delete-messages") Message.delete({ author_id: args[0] });
+						}
+						break;
+					case "disable":
+						if (args.length === 1) {
+							User.update({ id: args[0] }, { disabled: true });
+						}
+						break;
+				}
+			} catch (e) {
+				console.log(e);
+			}
+		}
+
+		if (channel.isDm()) {
+			const channel_dto = await DmChannelDTO.from(channel);
+
+			for (let recipient of channel.recipients!) {
+				if (recipient.closed) {
+					await emitEvent({
+						event: "CHANNEL_CREATE",
+						data: channel_dto.excludedRecipients([recipient.user_id]),
+						user_id: recipient.user_id
+					});
+				}
+			}
+
+			//Only one recipients should be closed here, since in group DMs the recipient is deleted not closed
+			await Promise.all(
+				channel
+					.recipients!.filter((r) => r.closed)
+					.map(async (r) => {
+						r.closed = false;
+						return await r.save();
+					})
+			);
+		}
+
+		await emitEvent({ event: "MESSAGE_CREATE", channel_id: channel_id, data: message } as MessageCreateEvent);
+		postHandleMessage(message).catch((e) => {}); // no await as it shouldnt block the message send function and silently catch error
+
+		return res.json(message);
 	}
-
-	const data = await sendMessage({
-		...body,
-		type: 0,
-		pinned: false,
-		author_id: req.user_id,
-		embeds,
-		channel_id,
-		attachments,
-		edited_timestamp: undefined
-	});
-
-	return res.json(data);
-});
+);
