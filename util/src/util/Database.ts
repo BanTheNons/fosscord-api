@@ -14,10 +14,10 @@ export function initDatabase() {
 	console.log("[Database] connecting ...");
 	// @ts-ignore
 	promise = createConnection({
-		type: "sqlite",
-		database: "database.db",
-		// type: "postgres",
-		// url: "postgres://fosscord:wb94SmuURM2Syv&@localhost/fosscord",
+		//type: "sqlite",
+		//database: "database.db",
+		type: "postgres",
+		url: "postgres://admin:amogus&@localhost/fosscord",
 		//
 		entities: Object.values(Models).filter((x) => x.constructor.name !== "Object"),
 		synchronize: true,

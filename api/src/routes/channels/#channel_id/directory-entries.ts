@@ -1,4 +1,4 @@
-import { ChannelModel, GuildModel } from "@fosscord/util";
+import { Channel, Guild } from "@fosscord/util";
 import { Request, Response, Router } from "express";
 
 const router: Router = Router();
@@ -8,13 +8,13 @@ router.get("/counts", async (req: Request, res: Response) => {
 });
 
 router.get("/", async (req: Request, res: Response) => {
-    const { guild_id } = await ChannelModel.findOne({ id: req.params.channel_id });
+    const { guild_id } = await Channel.findOne({ id: req.params.channel_id }) as Channel;
 
-    const guild = await GuildModel.findOne({ id: guild_id });
+    const guild = await Guild.findOne({ id: guild_id }) as Guild;
 
     let guilded;
     try {
-        guilded = await GuildModel.findOne({ id: "879358730968326152" });
+        guilded = await Guild.findOne({ id: "879358730968326152" }) as Guild;
     } catch (e) {}
 
     const response = [
