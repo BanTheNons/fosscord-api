@@ -105,4 +105,9 @@ typings/
 
 # Compiled TypeScript code
 dist/
+
+# SQLite database
 database.db
+
+# Passwords
+passwords.ts

@@ -28,7 +28,7 @@ import { Recipient } from "@fosscord/util";
 import { genSessionId } from "@fosscord/gateway/util/SessionUtils";
 
 let guild_experiments: any = [];
-guildExperiments.forEach((experiment, index) => {
+if (guildExperiments.length) guildExperiments.forEach((experiment, index) => {
 	guild_experiments[index] = encodeGuildExperiment(experiment) as any;
 });
 
