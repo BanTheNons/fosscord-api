@@ -22,6 +22,7 @@ export enum ChannelType {
 	GUILD_PUBLIC_THREAD = 11, // a temporary sub-channel within a GUILD_TEXT channel
 	GUILD_PRIVATE_THREAD = 12, // a temporary sub-channel within a GUILD_TEXT channel that is only viewable by those invited and those with the MANAGE_THREADS permission
 	GUILD_STAGE_VOICE = 13, // a voice channel for hosting events with an audience
+	GUILD_DIRECTORY = 14, // a directory channel for student hubs
 }
 
 @Entity("channels")
