@@ -87,6 +87,8 @@ export function route(opts: RouteOptions) {
 			if (!permission.has(required)) {
 				throw DiscordApiErrors.MISSING_PERMISSIONS.withParams(opts.permission as string);
 			}
+
+			req.permission = permission;
 		}
 
 		if (validate) {

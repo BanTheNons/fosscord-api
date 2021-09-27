@@ -3620,7 +3620,7 @@
                 "type": "string"
             },
             "permissions": {
-                "type": "bigint"
+                "type": "string"
             },
             "color": {
                 "type": "integer"

@@ -1,0 +1,325 @@
+[
+  {
+    "type": "guild",
+    "title": "New Thread Perms",
+    "description": [
+        "Control",
+        "Treatment 1: On"
+    ],
+    "id": "2021-08_threads_permissions",
+    "hashKey": 59132052,
+    "revision": 0,
+    "populations": [
+      {
+        "buckets": {
+          "1": {
+            "rollout": [
+              {
+                "min": 0,
+                "max": 10000
+              }
+            ]
+          }
+        },
+        "filters": []
+      }
+    ],
+    "overrides": {}
+  },
+  {
+    "title": "Control and receive live stage notifications.",
+    "description": [
+        "Control",
+        "Treatment 1: Show live stage notification surfaces - checkbox.",
+        "Treatment 2: Show live stage notification surfaces - inline."
+    ],
+    "id": "2021-07_live_stage_notifications",
+    "hashKey": 134954249,
+    "revision": 0,
+    "populations": [
+      {
+        "buckets": {
+          "2": {
+            "rollout": [
+              {
+                "min": 0,
+                "max": 10000
+              }
+            ]
+          }
+        },
+        "filters": []
+      }
+    ],
+    "overrides": {}
+  },
+  {
+    "title": "Stage Events",
+    "description": [
+        "Control",
+        "Treatment 1: Guild can use Stage Events"
+    ],
+    "id":"2021-06_stage_events",
+    "hashKey": 4150241132,
+    "revision": 0,
+    "populations": [
+      {
+        "buckets": {
+          "1": {
+            "rollout": [
+              {
+                "min": 0,
+                "max": 10000
+              }
+            ]
+          }
+        },
+        "filters": []
+      }
+    ],
+    "overrides": {}
+  },
+  {
+    "title": "Stage Events - Mobile Creation",
+    "description": [
+        "Control",
+        "Treatment 1: Guild can create Stage Events (on mobile devices)"
+    ],
+    "id": "2021-07_guild_event_creation",
+    "hashKey": 191411714,
+    "revision": 0,
+    "populations": [
+      {
+        "buckets": {
+          "1": {
+            "rollout": [
+              {
+                "min": 0,
+                "max": 10000
+              }
+            ]
+          }
+        },
+        "filters": []
+      }
+    ],
+    "overrides": {}
+  },
+  {
+    "title": "Custom Role Icon",
+    "description": [
+        "Control",
+        "Treatment 1: Enables guilds to use custom role icons"
+    ],
+    "id": "2021-08_custom_role_icons",
+    "hashKey": 83700222,
+    "revision": 0,
+    "populations": [
+      {
+        "buckets": {
+          "1": {
+            "rollout": [
+              {
+                "min": 0,
+                "max": 10000
+              }
+            ]
+          }
+        },
+        "filters": []
+      }
+    ],
+    "overrides": {}
+  },
+  {
+    "title": "Tier Threshold Experiment",
+    "description": [
+        "Control",
+        "Treatment 1: Reduces thresholds for boosting tiers 2 and 3"
+    ],
+    "id": "2021-09_repositioning_tier_thresholds",
+    "hashKey": 362422518,
+    "revision": 0,
+    "populations": [
+      {
+        "buckets": {
+          "1": {
+            "rollout": [
+              {
+                "min": 0,
+                "max": 10000
+              }
+            ]
+          }
+        },
+        "filters": []
+      }
+    ],
+    "overrides": {}
+  },
+  {
+    "title": "Create threads",
+    "description": [
+        "Control",
+        "Treatment 1: On"
+    ],
+    "id": "2020-09_threads",
+    "hashKey": 3363020987,
+    "revision": 0,
+    "populations": [
+      {
+        "buckets": {
+          "1": {
+            "rollout": [
+              {
+                "min": 0,
+                "max": 10000
+              }
+            ]
+          }
+        },
+        "filters": []
+      }
+    ],
+    "overrides": {}
+  },
+  {
+    "title": "Threads Rollout",
+    "description": [
+        "Control",
+        "Treatment 1: On",
+        "Treatment 2: On"
+    ],
+    "id": "2021-06_threads_rollout",
+    "hashKey": 2653930115,
+    "revision": 0,
+    "populations": [
+      {
+        "buckets": {
+          "-1": {
+            "rollout": [
+              {
+                "min": 0,
+                "max": 10000
+              }
+            ]
+          }
+        },
+        "filters": []
+      }
+    ],
+    "overrides": {}
+  },
+  {
+    "title": "Activities Experiment",
+    "description": [
+        "Control",
+        "Treatment 1: Poker Night",
+        "Treatment 2: All Activities",
+        "Treatment 3: Betrayal",
+        "Treatment 4: YouTube",
+        "Treatment 5: Fishington",
+        "Treatment 31: Public Server Experiment",
+        "Treatment 32: Employee Server Activities",
+        "Treatment 33: Employee Games Dev Server Activities",
+        "Treatment 34: Alpha Test Server Activities"
+    ],
+    "id": "2020-11_poker_night",
+    "hashKey": 1883865682,
+    "revision": 0,
+    "populations": [
+      {
+        "buckets": {
+          "-1": {
+            "rollout": [
+              {
+                "min": 0,
+                "max": 10000
+              }
+            ]
+          }
+        },
+        "filters": []
+      }
+    ],
+    "overrides": {}
+  },
+  {
+    "title": "Guild Role Subscriptions",
+    "description": [
+        "Control",
+        "Treatment 1: Enables guild to create Guild Role Subscriptions"
+    ],
+    "id": "2021-06_guild_role_subscriptions",
+    "hashKey": 1405831955,
+    "revision": 0,
+    "populations": [
+      {
+        "buckets": {
+          "1": {
+            "rollout": [
+              {
+                "min": 0,
+                "max": 10000
+              }
+            ]
+          }
+        },
+        "filters": []
+      }
+    ],
+    "overrides": {}
+  },
+  {
+    "title": "Lottie Sticker Uploads",
+    "description": [
+        "Control",
+        "Treatment 1: Allow Lottie sticker uploads"
+    ],
+    "id": "2021-07_stickers_lottie_upload",
+    "hashKey": 2009396848,
+    "revision": 0,
+    "populations": [
+      {
+        "buckets": {
+          "1": {
+            "rollout": [
+              {
+                "min": 0,
+                "max": 10000
+              }
+            ]
+          }
+        },
+        "filters": []
+      }
+    ],
+    "overrides": {}
+  },
+  {
+    "title": "School Hub Categories",
+    "description": [
+        "Control",
+        "Treatment 1: Enables categories for directory channels"
+    ],
+    "id": "2021-07_desktop_hub_categories",
+    "hashKey": 1323538810,
+    "revision": 0,
+    "populations": [
+      {
+        "buckets": {
+          "1": {
+            "rollout": [
+              {
+                "min": 0,
+                "max": 10000
+              }
+            ]
+          }
+        },
+        "filters": []
+      }
+    ],
+    "overrides": {}
+  }
+]

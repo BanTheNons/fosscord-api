@@ -17,7 +17,7 @@ export function initDatabase() {
 		//type: "sqlite",
 		//database: "database.db",
 		type: "postgres",
-		url: "postgres://admin:amogus&@localhost/fosscord",
+		url: "postgres://postgres:pass@localhost/fosscord",
 		//
 		entities: Object.values(Models).filter((x) => x.constructor.name !== "Object"),
 		synchronize: true,
