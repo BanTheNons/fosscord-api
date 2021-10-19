@@ -1,10 +1,10 @@
 import { Router, Response, Request } from "express";
 import { Config, Snowflake } from "@fosscord/util";
-import { storage } from "@fosscord/cdn/util/Storage";
+import { storage } from "../util/Storage";
 import FileType from "file-type";
 import { HTTPError } from "lambert-server";
-import { multer } from "@fosscord/cdn/util/multer";
 import crypto from "crypto";
+import { multer } from "../util/multer";
 
 // TODO: check premium and animated pfp are allowed in the config
 // TODO: generate different sizes of icon
@@ -44,7 +44,8 @@ router.post(
 		if (ANIMATED_MIME_TYPES.includes(type.mime)) hash = `a_${hash}`; // animated icons have a_ infront of the hash
 
 		const path = `avatars/${user_id}/${hash}`;
-		const endpoint = Config.get().cdn.endpoint || "http://localhost:3003";
+		const endpoint =
+			Config.get().cdn.endpointPublic || "http://localhost:3003";
 
 		await storage.set(path, buffer);
 
@@ -56,6 +57,21 @@ router.post(
 		});
 	}
 );
+
+router.get("/:user_id", async (req: Request, res: Response) => {
+	var { user_id } = req.params;
+	user_id = user_id.split(".")[0]; // remove .file extension
+	const path = `avatars/${user_id}`;
+
+	const file = await storage.get(path);
+	if (!file) throw new HTTPError("not found", 404);
+	const type = await FileType.fromBuffer(file);
+
+	res.set("Content-Type", type?.mime);
+	res.set("Cache-Control", "public, max-age=31536000");
+
+	return res.send(file);
+});
 
 router.get("/:user_id/:hash", async (req: Request, res: Response) => {
 	var { user_id, hash } = req.params;

@@ -8,12 +8,14 @@ import {
 	Column,
 	CreateDateColumn,
 	Entity,
+	FindConditions,
 	JoinColumn,
 	JoinTable,
 	ManyToMany,
 	ManyToOne,
 	OneToMany,
 	RelationId,
+	RemoveOptions,
 	UpdateDateColumn,
 } from "typeorm";
 import { BaseClass } from "./BaseClass";
@@ -44,15 +46,14 @@ export enum MessageType {
 
 @Entity("messages")
 export class Message extends BaseClass {
-	@Column()
-	id: string;
-
 	@Column({ nullable: true })
 	@RelationId((message: Message) => message.channel)
 	channel_id: string;
 
 	@JoinColumn({ name: "channel_id" })
-	@ManyToOne(() => Channel)
+	@ManyToOne(() => Channel, {
+		onDelete: "CASCADE",
+	})
 	channel: Channel;
 
 	@Column({ nullable: true })
@@ -60,7 +61,9 @@ export class Message extends BaseClass {
 	guild_id?: string;
 
 	@JoinColumn({ name: "guild_id" })
-	@ManyToOne(() => Guild)
+	@ManyToOne(() => Guild, {
+		onDelete: "CASCADE",
+	})
 	guild?: Guild;
 
 	@Column({ nullable: true })
@@ -124,11 +127,13 @@ export class Message extends BaseClass {
 	mention_channels: Channel[];
 
 	@JoinTable({ name: "message_stickers" })
-	@ManyToMany(() => Sticker)
+	@ManyToMany(() => Sticker, { cascade: true, onDelete: "CASCADE" })
 	sticker_items?: Sticker[];
 
-	@JoinColumn({ name: "attachment_ids" })
-	@OneToMany(() => Attachment, (attachment: Attachment) => attachment.message, { cascade: true })
+	@OneToMany(() => Attachment, (attachment: Attachment) => attachment.message, {
+		cascade: true,
+		orphanedRowAction: "delete",
+	})
 	attachments?: Attachment[];
 
 	@Column({ type: "simple-json" })
@@ -143,7 +148,7 @@ export class Message extends BaseClass {
 	@Column({ nullable: true })
 	pinned?: boolean;
 
-	@Column({ type: "simple-enum", enum: MessageType })
+	@Column({ type: "int" })
 	type: MessageType;
 
 	@Column({ type: "simple-json", nullable: true })

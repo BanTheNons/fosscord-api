@@ -1,12 +1,15 @@
-import { Column, Entity, JoinColumn, ManyToOne } from "typeorm";
-import { BaseClass } from "./BaseClass";
+import { Column, Entity } from "typeorm";
+import { BaseClassWithoutId, PrimaryIdColumn } from "./BaseClass";
 import crypto from "crypto";
 import { Snowflake } from "../util/Snowflake";
 
 @Entity("config")
-export class ConfigEntity extends BaseClass {
-	@Column({ type: "simple-json" })
-	value: ConfigValue;
+export class ConfigEntity extends BaseClassWithoutId {
+	@PrimaryIdColumn()
+	key: string;
+
+	@Column({ type: "simple-json", nullable: true })
+	value: number | boolean | null | string | undefined;
 }
 
 export interface RateLimitOptions {
@@ -37,19 +40,16 @@ export interface KafkaBroker {
 export interface ConfigValue {
 	gateway: {
 		endpointClient: string | null;
-		endpoint: string | null;
+		endpointPrivate: string | null;
+		endpointPublic: string | null;
 	};
 	cdn: {
 		endpointClient: string | null;
-		endpoint: string | null;
+		endpointPublic: string | null;
+		endpointPrivate: string | null;
 	};
 	general: {
-		instance_id: string;
-	};
-	permissions: {
-		user: {
-			createGuilds: boolean;
-		};
+		instanceId: string;
 	};
 	limits: {
 		user: {
@@ -59,6 +59,7 @@ export interface ConfigValue {
 		};
 		guild: {
 			maxRoles: number;
+			maxEmojis: number;
 			maxMembers: number;
 			maxChannels: number;
 			maxChannelsInCategory: number;
@@ -77,6 +78,7 @@ export interface ConfigValue {
 			maxWebhooks: number;
 		};
 		rate: {
+			disabled: boolean;
 			ip: Omit<RateLimitOptions, "bot_count">;
 			global: RateLimitOptions;
 			error: RateLimitOptions;
@@ -110,21 +112,24 @@ export interface ConfigValue {
 	};
 	register: {
 		email: {
-			necessary: boolean; // we have to use necessary instead of required as the cli tool uses json schema and can't use required
+			required: boolean;
 			allowlist: boolean;
 			blocklist: boolean;
 			domains: string[];
 		};
 		dateOfBirth: {
-			necessary: boolean;
+			required: boolean;
 			minimum: number; // in years
 		};
+		disabled: boolean;
 		requireCaptcha: boolean;
 		requireInvite: boolean;
+		guestsRequireInvite: boolean;
 		allowNewRegistration: boolean;
 		allowMultipleAccounts: boolean;
 		blockProxies: boolean;
 		password: {
+			required: boolean;
 			minLength: number;
 			minNumbers: number;
 			minUpperCase: number;
@@ -135,6 +140,19 @@ export interface ConfigValue {
 		default: string;
 		useDefaultAsOptimal: boolean;
 		available: Region[];
+	};
+	guild: {
+		showAllGuildsInDiscovery: boolean;
+		autoJoin: {
+			enabled: boolean;
+			guilds: string[];
+			canLeave: boolean;
+		};
+	};
+	gif: {
+		enabled: boolean;
+		provider: "tenor"; // more coming soon
+		apiKey?: string;
 	};
 	rabbitmq: {
 		host: string | null;
@@ -147,19 +165,16 @@ export interface ConfigValue {
 export const DefaultConfigOptions: ConfigValue = {
 	gateway: {
 		endpointClient: null,
-		endpoint: null,
+		endpointPrivate: null,
+		endpointPublic: null,
 	},
 	cdn: {
 		endpointClient: null,
-		endpoint: null,
+		endpointPrivate: null,
+		endpointPublic: null,
 	},
 	general: {
-		instance_id: Snowflake.generate(),
-	},
-	permissions: {
-		user: {
-			createGuilds: true,
-		},
+		instanceId: Snowflake.generate(),
 	},
 	limits: {
 		user: {
@@ -169,6 +184,7 @@ export const DefaultConfigOptions: ConfigValue = {
 		},
 		guild: {
 			maxRoles: 250,
+			maxEmojis: 50, // TODO: max emojis per guild per nitro level
 			maxMembers: 250000,
 			maxChannels: 500,
 			maxChannelsInCategory: 50,
@@ -187,6 +203,7 @@ export const DefaultConfigOptions: ConfigValue = {
 			maxWebhooks: 10,
 		},
 		rate: {
+			disabled: true,
 			ip: {
 				count: 500,
 				window: 5,
@@ -246,22 +263,25 @@ export const DefaultConfigOptions: ConfigValue = {
 	},
 	register: {
 		email: {
-			necessary: true,
+			required: false,
 			allowlist: false,
 			blocklist: true,
 			domains: [], // TODO: efficiently save domain blocklist in database
 			// domains: fs.readFileSync(__dirname + "/blockedEmailDomains.txt", { encoding: "utf8" }).split("\n"),
 		},
 		dateOfBirth: {
-			necessary: true,
+			required: false,
 			minimum: 13,
 		},
+		disabled: false,
 		requireInvite: false,
+		guestsRequireInvite: true,
 		requireCaptcha: true,
 		allowNewRegistration: true,
 		allowMultipleAccounts: true,
 		blockProxies: true,
 		password: {
+			required: false,
 			minLength: 8,
 			minNumbers: 2,
 			minUpperCase: 2,
@@ -281,6 +301,19 @@ export const DefaultConfigOptions: ConfigValue = {
 				deprecated: false,
 			},
 		],
+	},
+	guild: {
+		showAllGuildsInDiscovery: false,
+		autoJoin: {
+			enabled: true,
+			canLeave: true,
+			guilds: [],
+		},
+	},
+	gif: {
+		enabled: true,
+		provider: "tenor",
+		apiKey: "LIVDSRZULELA",
 	},
 	rabbitmq: {
 		host: null,

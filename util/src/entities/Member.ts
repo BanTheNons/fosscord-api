@@ -8,8 +8,6 @@ import {
 	JoinTable,
 	ManyToMany,
 	ManyToOne,
-	OneToMany,
-	PrimaryColumn,
 	PrimaryGeneratedColumn,
 	RelationId,
 } from "typeorm";
@@ -28,6 +26,22 @@ import { BaseClassWithoutId } from "./BaseClass";
 import { Ban, PublicGuildRelations } from ".";
 import { DiscordApiErrors } from "../util/Constants";
 
+export const MemberPrivateProjection: (keyof Member)[] = [
+	"id",
+	"guild",
+	"guild_id",
+	"deaf",
+	"joined_at",
+	"last_message_id",
+	"mute",
+	"nick",
+	"pending",
+	"premium_since",
+	"roles",
+	"settings",
+	"user",
+];
+
 @Entity("members")
 @Index(["id", "guild_id"], { unique: true })
 export class Member extends BaseClassWithoutId {
@@ -39,7 +53,9 @@ export class Member extends BaseClassWithoutId {
 	id: string;
 
 	@JoinColumn({ name: "id" })
-	@ManyToOne(() => User)
+	@ManyToOne(() => User, {
+		onDelete: "CASCADE",
+	})
 	user: User;
 
 	@Column()
@@ -47,7 +63,9 @@ export class Member extends BaseClassWithoutId {
 	guild_id: string;
 
 	@JoinColumn({ name: "guild_id" })
-	@ManyToOne(() => Guild)
+	@ManyToOne(() => Guild, {
+		onDelete: "CASCADE",
+	})
 	guild: Guild;
 
 	@Column({ nullable: true })
@@ -55,7 +73,6 @@ export class Member extends BaseClassWithoutId {
 
 	@JoinTable({
 		name: "member_roles",
-
 		joinColumn: { name: "index", referencedColumnName: "index" },
 		inverseJoinColumn: {
 			name: "role_id",
@@ -80,8 +97,11 @@ export class Member extends BaseClassWithoutId {
 	@Column()
 	pending: boolean;
 
-	@Column({ type: "simple-json" })
+	@Column({ type: "simple-json", select: false })
 	settings: UserGuildSettings;
+
+	@Column({ nullable: true })
+	last_message_id?: string;
 
 	// TODO: update
 	// @Column({ type: "simple-json" })

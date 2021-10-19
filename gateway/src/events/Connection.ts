@@ -1,17 +1,16 @@
 import WS from "ws";
-import WebSocket from "@fosscord/gateway/util/WebSocket";
+import { WebSocket } from "@fosscord/gateway";
+import { Send } from "../util/Send";
+import { CLOSECODES, OPCODES } from "../util/Constants";
+import { setHeartbeat } from "../util/Heartbeat";
 import { IncomingMessage } from "http";
 import { Close } from "./Close";
 import { Message } from "./Message";
-import { setHeartbeat } from "@fosscord/gateway/util/setHeartbeat";
-import { Send } from "@fosscord/gateway/util/Send";
-import { CLOSECODES, OPCODES } from "@fosscord/gateway/util/Constants";
 import { createDeflate } from "zlib";
 import { URL } from "url";
-import { Session } from "@fosscord/util";
 var erlpack: any;
 try {
-	erlpack = require("erlpack");
+	erlpack = require("@yukikaze-bot/erlpack");
 } catch (error) {}
 
 // TODO: check rate limit
@@ -24,16 +23,21 @@ export async function Connection(
 	request: IncomingMessage
 ) {
 	try {
+		// @ts-ignore
 		socket.on("close", Close);
 		// @ts-ignore
 		socket.on("message", Message);
+		console.log(`[Gateway] Connections: ${this.clients.size}`);
 
 		const { searchParams } = new URL(`http://localhost${request.url}`);
 		// @ts-ignore
 		socket.encoding = searchParams.get("encoding") || "json";
 		if (!["json", "etf"].includes(socket.encoding)) {
-			if (socket.encoding === "etf" && erlpack)
-				throw new Error("Erlpack is not installed: 'npm i -D erlpack'");
+			if (socket.encoding === "etf" && erlpack) {
+				throw new Error(
+					"Erlpack is not installed: 'npm i @yukikaze-bot/erlpack'"
+				);
+			}
 			return socket.close(CLOSECODES.Decode_error);
 		}
 
@@ -52,6 +56,7 @@ export async function Connection(
 		}
 
 		socket.events = {};
+		socket.member_events = {};
 		socket.permissions = {};
 		socket.sequence = 0;
 
@@ -65,12 +70,10 @@ export async function Connection(
 		});
 
 		socket.readyTimeout = setTimeout(() => {
-			Session.delete({ session_id: socket.session_id }); //should we await?
 			return socket.close(CLOSECODES.Session_timed_out);
 		}, 1000 * 30);
 	} catch (error) {
 		console.error(error);
-		Session.delete({ session_id: socket.session_id }); //should we await?
 		return socket.close(CLOSECODES.Unknown_error);
 	}
 }

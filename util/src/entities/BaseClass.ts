@@ -1,13 +1,10 @@
 import "reflect-metadata";
-import { BaseEntity, BeforeInsert, BeforeUpdate, EntityMetadata, FindConditions, PrimaryColumn } from "typeorm";
+import { BaseEntity, EntityMetadata, FindConditions, ObjectIdColumn, PrimaryColumn } from "typeorm";
 import { Snowflake } from "../util/Snowflake";
 import "missing-native-js-functions";
 
-// TODO use class-validator https://typeorm.io/#/validation with class annotators (isPhone/isEmail) combined with types from typescript-json-schema
-// btw. we don't use class-validator for everything, because we need to explicitly set the type instead of deriving it from typescript also it doesn't easily support nested objects
-
 export class BaseClassWithoutId extends BaseEntity {
-	constructor(private props?: any) {
+	constructor(props?: any) {
 		super();
 		this.assign(props);
 	}
@@ -34,7 +31,7 @@ export class BaseClassWithoutId extends BaseEntity {
 		for (const key in props) {
 			if (!properties.has(key)) continue;
 			// @ts-ignore
-			const setter = this[`set${key.capitalize()}`];
+			const setter = this[`set${key.capitalize()}`]; // use setter function if it exists
 
 			if (setter) {
 				setter.call(this, props[key]);
@@ -43,13 +40,6 @@ export class BaseClassWithoutId extends BaseEntity {
 				this[key] = props[key];
 			}
 		}
-	}
-
-	@BeforeUpdate()
-	@BeforeInsert()
-	validate() {
-		this.assign(this.props);
-		return this;
 	}
 
 	toJSON(): any {
@@ -71,8 +61,10 @@ export class BaseClassWithoutId extends BaseEntity {
 	}
 }
 
+export const PrimaryIdColumn = process.env.DATABASE?.startsWith("mongodb") ? ObjectIdColumn : PrimaryColumn;
+
 export class BaseClass extends BaseClassWithoutId {
-	@PrimaryColumn()
+	@PrimaryIdColumn()
 	id: string;
 
 	assign(props: any = {}) {

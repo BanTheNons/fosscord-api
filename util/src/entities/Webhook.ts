@@ -12,10 +12,7 @@ export enum WebhookType {
 
 @Entity("webhooks")
 export class Webhook extends BaseClass {
-	@Column()
-	id: string;
-
-	@Column({ type: "simple-enum", enum: WebhookType })
+	@Column({ type: "int" })
 	type: WebhookType;
 
 	@Column({ nullable: true })
@@ -32,7 +29,9 @@ export class Webhook extends BaseClass {
 	guild_id: string;
 
 	@JoinColumn({ name: "guild_id" })
-	@ManyToOne(() => Guild)
+	@ManyToOne(() => Guild, {
+		onDelete: "CASCADE",
+	})
 	guild: Guild;
 
 	@Column({ nullable: true })
@@ -40,7 +39,9 @@ export class Webhook extends BaseClass {
 	channel_id: string;
 
 	@JoinColumn({ name: "channel_id" })
-	@ManyToOne(() => Channel)
+	@ManyToOne(() => Channel, {
+		onDelete: "CASCADE",
+	})
 	channel: Channel;
 
 	@Column({ nullable: true })
@@ -48,7 +49,9 @@ export class Webhook extends BaseClass {
 	application_id: string;
 
 	@JoinColumn({ name: "application_id" })
-	@ManyToOne(() => Application)
+	@ManyToOne(() => Application, {
+		onDelete: "CASCADE",
+	})
 	application: Application;
 
 	@Column({ nullable: true })
@@ -56,7 +59,9 @@ export class Webhook extends BaseClass {
 	user_id: string;
 
 	@JoinColumn({ name: "user_id" })
-	@ManyToOne(() => User)
+	@ManyToOne(() => User, {
+		onDelete: "CASCADE",
+	})
 	user: User;
 
 	@Column({ nullable: true })
@@ -64,6 +69,8 @@ export class Webhook extends BaseClass {
 	source_guild_id: string;
 
 	@JoinColumn({ name: "source_guild_id" })
-	@ManyToOne(() => Guild)
+	@ManyToOne(() => Guild, {
+		onDelete: "CASCADE",
+	})
 	source_guild: Guild;
 }

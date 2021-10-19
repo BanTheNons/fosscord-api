@@ -9,11 +9,11 @@ export default function TestClient(app: Application) {
 	const indexHTML = fs.readFileSync(path.join(__dirname, "..", "..", "client_test", "index.html"), { encoding: "utf8" });
 
 	var html = indexHTML;
-	const CDN_ENDPOINT = (Config.get().cdn.endpointClient || Config.get()?.cdn.endpoint || process.env.CDN || "").replace(
+	const CDN_ENDPOINT = (Config.get().cdn.endpointClient || Config.get()?.cdn.endpointPublic || process.env.CDN || "").replace(
 		/(https?)?(:\/\/?)/g,
 		""
 	);
-	const GATEWAY_ENDPOINT = Config.get().gateway.endpointClient || Config.get()?.gateway.endpoint || process.env.GATEWAY || "";
+	const GATEWAY_ENDPOINT = Config.get().gateway.endpointClient || Config.get()?.gateway.endpointPublic || process.env.GATEWAY || "";
 
 	if (CDN_ENDPOINT) {
 		html = html.replace(/CDN_HOST: .+/, `CDN_HOST: \`${CDN_ENDPOINT}\`,`);
@@ -66,6 +66,8 @@ export default function TestClient(app: Application) {
 	app.get("*", (req: Request, res: Response) => {
 		res.set("Cache-Control", "public, max-age=" + 60 * 60 * 24);
 		res.set("content-type", "text/html");
+
+		if (req.url.startsWith("/invite")) return res.send(html.replace("9b2b7f0632acd0c5e781", "9f24f709a3de09b67c49"));
 
 		res.send(html);
 	});

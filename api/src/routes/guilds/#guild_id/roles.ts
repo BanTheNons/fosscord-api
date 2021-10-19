@@ -29,7 +29,7 @@ export type RolePositionUpdateSchema = {
 	position: number;
 }[];
 
-router.get("/", async (req: Request, res: Response) => {
+router.get("/", route({}), async (req: Request, res: Response) => {
 	const guild_id = req.params.guild_id;
 
 	await Member.IsInGuildOrFail(req.user_id, guild_id);
@@ -57,7 +57,7 @@ router.post("/", route({ body: "RoleModifySchema", permission: "MANAGE_ROLES" })
 		...body,
 		guild_id: guild_id,
 		managed: false,
-		permissions: String(req.permission!.bitfield & (BigInt(body.permissions || 0))),
+		permissions: String(req.permission!.bitfield & BigInt(body.permissions || "0")),
 		tags: undefined
 	});
 
@@ -105,7 +105,12 @@ router.patch("/:role_id", route({ body: "RoleModifySchema", permission: "MANAGE_
 	const { role_id, guild_id } = req.params;
 	const body = req.body as RoleModifySchema;
 
-	const role = new Role({ ...body, id: role_id, guild_id, permissions: String(req.permission!.bitfield & (BigInt(body.permissions || 0))) });
+	const role = new Role({
+		...body,
+		id: role_id,
+		guild_id,
+		permissions: String(req.permission!.bitfield & BigInt(body.permissions || "0"))
+	});
 
 	await Promise.all([
 		role.save(),

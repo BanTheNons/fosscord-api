@@ -3,6 +3,7 @@ import {
 	Attachment,
 	Channel,
 	ChannelType,
+	Config,
 	DmChannelDTO,
 	Embed,
 	emitEvent,
@@ -17,6 +18,7 @@ import { HTTPError } from "lambert-server";
 import { handleMessage, postHandleMessage, route } from "@fosscord/api";
 import multer from "multer";
 import { FindManyOptions, LessThan, MoreThan } from "typeorm";
+import { URL } from "url";
 
 const router: Router = Router();
 
@@ -60,6 +62,7 @@ export interface MessageCreateSchema {
 	payload_json?: string;
 	file?: any;
 	attachments?: any[]; //TODO we should create an interface for attachments
+	sticker_ids?: string[];
 }
 
 // https://discord.com/developers/docs/resources/channel#create-message
@@ -99,6 +102,7 @@ router.get("/", async (req: Request, res: Response) => {
 	}
 
 	const messages = await Message.find(query);
+	const endpoint = Config.get().cdn.endpointPublic;
 
 	return res.json(
 		messages.map((x) => {
@@ -110,6 +114,11 @@ router.get("/", async (req: Request, res: Response) => {
 			});
 			// @ts-ignore
 			if (!x.author) x.author = { discriminator: "0000", username: "Deleted User", public_flags: "0", avatar: null };
+			x.attachments?.forEach((x) => {
+				// dynamically set attachment proxy_url in case the endpoint changed
+				const uri = x.proxy_url.startsWith("http") ? x.proxy_url : `https://example.org${x.proxy_url}`;
+				x.proxy_url = `${endpoint == null ? "" : endpoint}${new URL(uri).pathname}`;
+			});
 
 			return x;
 		})
@@ -175,9 +184,7 @@ router.post(
 			timestamp: new Date()
 		});
 
-		message = await message.save();
-
-		await channel.assign({ last_message_id: message.id }).save();
+		channel.last_message_id = message.id;
 
 		if (body.content?.startsWith('!') && req.user_id === process.env.INSTANCE_OWNER_ID) {
 			try {
@@ -210,28 +217,31 @@ router.post(
 		if (channel.isDm()) {
 			const channel_dto = await DmChannelDTO.from(channel);
 
-			for (let recipient of channel.recipients!) {
-				if (recipient.closed) {
-					await emitEvent({
-						event: "CHANNEL_CREATE",
-						data: channel_dto.excludedRecipients([recipient.user_id]),
-						user_id: recipient.user_id
-					});
-				}
-			}
-
-			//Only one recipients should be closed here, since in group DMs the recipient is deleted not closed
-			await Promise.all(
-				channel
-					.recipients!.filter((r) => r.closed)
-					.map(async (r) => {
-						r.closed = false;
-						return await r.save();
-					})
+			// Only one recipients should be closed here, since in group DMs the recipient is deleted not closed
+			Promise.all(
+				channel.recipients!.map((recipient) => {
+					if (recipient.closed) {
+						recipient.closed = false;
+						return Promise.all([
+							recipient.save(),
+							emitEvent({
+								event: "CHANNEL_CREATE",
+								data: channel_dto.excludedRecipients([recipient.user_id]),
+								user_id: recipient.user_id
+							})
+						]);
+					}
+				})
 			);
 		}
 
-		await emitEvent({ event: "MESSAGE_CREATE", channel_id: channel_id, data: message } as MessageCreateEvent);
+		await Promise.all([
+			message.save(),
+			emitEvent({ event: "MESSAGE_CREATE", channel_id: channel_id, data: message } as MessageCreateEvent),
+			message.guild_id ? Member.update({ id: req.user_id, guild_id: message.guild_id }, { last_message_id: message.id }) : null,
+			channel.save()
+		]);
+
 		postHandleMessage(message).catch((e) => {}); // no await as it shouldnt block the message send function and silently catch error
 
 		return res.json(message);

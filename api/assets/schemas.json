@@ -1,4 +1,32 @@
 {
+    "LoginSchema": {
+        "type": "object",
+        "properties": {
+            "login": {
+                "type": "string"
+            },
+            "password": {
+                "type": "string"
+            },
+            "undelete": {
+                "type": "boolean"
+            },
+            "captcha_key": {
+                "type": "string"
+            },
+            "login_source": {
+                "type": "string"
+            },
+            "gift_code_sku_id": {
+                "type": "string"
+            }
+        },
+        "required": [
+            "login",
+            "password"
+        ],
+        "$schema": "http://json-schema.org/draft-07/schema#"
+    },
     "RegisterSchema": {
         "type": "object",
         "properties": {
@@ -35,40 +63,9 @@
                 "type": "string"
             }
         },
-        "additionalProperties": false,
         "required": [
             "consent",
-            "password",
             "username"
-        ],
-        "$schema": "http://json-schema.org/draft-07/schema#"
-    },
-    "LoginSchema": {
-        "type": "object",
-        "properties": {
-            "login": {
-                "type": "string"
-            },
-            "password": {
-                "type": "string"
-            },
-            "undelete": {
-                "type": "boolean"
-            },
-            "captcha_key": {
-                "type": "string"
-            },
-            "login_source": {
-                "type": "string"
-            },
-            "gift_code_sku_id": {
-                "type": "string"
-            }
-        },
-        "additionalProperties": false,
-        "required": [
-            "login",
-            "password"
         ],
         "$schema": "http://json-schema.org/draft-07/schema#"
     },
@@ -128,13 +125,12 @@
                             "$ref": "#/definitions/ChannelPermissionOverwriteType"
                         },
                         "allow": {
-                            "type": "bigint"
+                            "type": "string"
                         },
                         "deny": {
-                            "type": "bigint"
+                            "type": "string"
                         }
                     },
-                    "additionalProperties": false,
                     "required": [
                         "allow",
                         "deny",
@@ -159,7 +155,6 @@
                 "type": "integer"
             }
         },
-        "additionalProperties": false,
         "definitions": {
             "ChannelPermissionOverwriteType": {
                 "enum": [
@@ -211,7 +206,6 @@
                                 "type": "string"
                             }
                         },
-                        "additionalProperties": false,
                         "required": [
                             "text"
                         ]
@@ -234,8 +228,7 @@
                             "url": {
                                 "type": "string"
                             }
-                        },
-                        "additionalProperties": false
+                        }
                     },
                     "author": {
                         "type": "object",
@@ -252,8 +245,7 @@
                             "proxy_icon_url": {
                                 "type": "string"
                             }
-                        },
-                        "additionalProperties": false
+                        }
                     },
                     "fields": {
                         "type": "array",
@@ -270,15 +262,13 @@
                                     "type": "boolean"
                                 }
                             },
-                            "additionalProperties": false,
                             "required": [
                                 "name",
                                 "value"
                             ]
                         }
                     }
-                },
-                "additionalProperties": false
+                }
             },
             "EmbedImage": {
                 "type": "object",
@@ -295,8 +285,7 @@
                     "width": {
                         "type": "integer"
                     }
-                },
-                "additionalProperties": false
+                }
             },
             "ChannelModifySchema": {
                 "type": "object",
@@ -354,13 +343,12 @@
                                     "$ref": "#/definitions/ChannelPermissionOverwriteType"
                                 },
                                 "allow": {
-                                    "type": "bigint"
+                                    "type": "string"
                                 },
                                 "deny": {
-                                    "type": "bigint"
+                                    "type": "string"
                                 }
                             },
-                            "additionalProperties": false,
                             "required": [
                                 "allow",
                                 "deny",
@@ -384,17 +372,66 @@
                     "default_auto_archive_duration": {
                         "type": "integer"
                     }
-                },
-                "additionalProperties": false
+                }
             },
-            "RelationshipType": {
-                "enum": [
-                    1,
-                    2,
-                    3,
-                    4
-                ],
-                "type": "number"
+            "UserPublic": {
+                "type": "object",
+                "properties": {
+                    "username": {
+                        "type": "string"
+                    },
+                    "discriminator": {
+                        "type": "string"
+                    },
+                    "id": {
+                        "type": "string"
+                    },
+                    "public_flags": {
+                        "type": "integer"
+                    },
+                    "avatar": {
+                        "type": "string"
+                    },
+                    "accent_color": {
+                        "type": "integer"
+                    },
+                    "banner": {
+                        "type": "string"
+                    },
+                    "bio": {
+                        "type": "string"
+                    },
+                    "bot": {
+                        "type": "boolean"
+                    }
+                },
+                "required": [
+                    "bio",
+                    "bot",
+                    "discriminator",
+                    "id",
+                    "public_flags",
+                    "username"
+                ]
+            },
+            "PublicConnectedAccount": {
+                "type": "object",
+                "properties": {
+                    "name": {
+                        "type": "string"
+                    },
+                    "type": {
+                        "type": "string"
+                    },
+                    "verifie": {
+                        "type": "boolean"
+                    }
+                },
+                "required": [
+                    "name",
+                    "type",
+                    "verifie"
+                ]
             }
         },
         "$schema": "http://json-schema.org/draft-07/schema#"
@@ -447,8 +484,7 @@
                     "replied_user": {
                         "type": "boolean"
                     }
-                },
-                "additionalProperties": false
+                }
             },
             "message_reference": {
                 "type": "object",
@@ -466,7 +502,6 @@
                         "type": "boolean"
                     }
                 },
-                "additionalProperties": false,
                 "required": [
                     "channel_id",
                     "message_id"
@@ -479,9 +514,14 @@
             "attachments": {
                 "type": "array",
                 "items": {}
+            },
+            "sticker_ids": {
+                "type": "array",
+                "items": {
+                    "type": "string"
+                }
             }
         },
-        "additionalProperties": false,
         "definitions": {
             "ChannelPermissionOverwriteType": {
                 "enum": [
@@ -533,7 +573,6 @@
                                 "type": "string"
                             }
                         },
-                        "additionalProperties": false,
                         "required": [
                             "text"
                         ]
@@ -556,8 +595,7 @@
                             "url": {
                                 "type": "string"
                             }
-                        },
-                        "additionalProperties": false
+                        }
                     },
                     "author": {
                         "type": "object",
@@ -574,8 +612,7 @@
                             "proxy_icon_url": {
                                 "type": "string"
                             }
-                        },
-                        "additionalProperties": false
+                        }
                     },
                     "fields": {
                         "type": "array",
@@ -592,15 +629,13 @@
                                     "type": "boolean"
                                 }
                             },
-                            "additionalProperties": false,
                             "required": [
                                 "name",
                                 "value"
                             ]
                         }
                     }
-                },
-                "additionalProperties": false
+                }
             },
             "EmbedImage": {
                 "type": "object",
@@ -617,8 +652,7 @@
                     "width": {
                         "type": "integer"
                     }
-                },
-                "additionalProperties": false
+                }
             },
             "ChannelModifySchema": {
                 "type": "object",
@@ -676,13 +710,12 @@
                                     "$ref": "#/definitions/ChannelPermissionOverwriteType"
                                 },
                                 "allow": {
-                                    "type": "bigint"
+                                    "type": "string"
                                 },
                                 "deny": {
-                                    "type": "bigint"
+                                    "type": "string"
                                 }
                             },
-                            "additionalProperties": false,
                             "required": [
                                 "allow",
                                 "deny",
@@ -706,17 +739,66 @@
                     "default_auto_archive_duration": {
                         "type": "integer"
                     }
-                },
-                "additionalProperties": false
+                }
             },
-            "RelationshipType": {
-                "enum": [
-                    1,
-                    2,
-                    3,
-                    4
-                ],
-                "type": "number"
+            "UserPublic": {
+                "type": "object",
+                "properties": {
+                    "username": {
+                        "type": "string"
+                    },
+                    "discriminator": {
+                        "type": "string"
+                    },
+                    "id": {
+                        "type": "string"
+                    },
+                    "public_flags": {
+                        "type": "integer"
+                    },
+                    "avatar": {
+                        "type": "string"
+                    },
+                    "accent_color": {
+                        "type": "integer"
+                    },
+                    "banner": {
+                        "type": "string"
+                    },
+                    "bio": {
+                        "type": "string"
+                    },
+                    "bot": {
+                        "type": "boolean"
+                    }
+                },
+                "required": [
+                    "bio",
+                    "bot",
+                    "discriminator",
+                    "id",
+                    "public_flags",
+                    "username"
+                ]
+            },
+            "PublicConnectedAccount": {
+                "type": "object",
+                "properties": {
+                    "name": {
+                        "type": "string"
+                    },
+                    "type": {
+                        "type": "string"
+                    },
+                    "verifie": {
+                        "type": "boolean"
+                    }
+                },
+                "required": [
+                    "name",
+                    "type",
+                    "verifie"
+                ]
             }
         },
         "$schema": "http://json-schema.org/draft-07/schema#"
@@ -752,7 +834,6 @@
                 "type": "integer"
             }
         },
-        "additionalProperties": false,
         "definitions": {
             "ChannelPermissionOverwriteType": {
                 "enum": [
@@ -804,7 +885,6 @@
                                 "type": "string"
                             }
                         },
-                        "additionalProperties": false,
                         "required": [
                             "text"
                         ]
@@ -827,8 +907,7 @@
                             "url": {
                                 "type": "string"
                             }
-                        },
-                        "additionalProperties": false
+                        }
                     },
                     "author": {
                         "type": "object",
@@ -845,8 +924,7 @@
                             "proxy_icon_url": {
                                 "type": "string"
                             }
-                        },
-                        "additionalProperties": false
+                        }
                     },
                     "fields": {
                         "type": "array",
@@ -863,15 +941,13 @@
                                     "type": "boolean"
                                 }
                             },
-                            "additionalProperties": false,
                             "required": [
                                 "name",
                                 "value"
                             ]
                         }
                     }
-                },
-                "additionalProperties": false
+                }
             },
             "EmbedImage": {
                 "type": "object",
@@ -888,8 +964,7 @@
                     "width": {
                         "type": "integer"
                     }
-                },
-                "additionalProperties": false
+                }
             },
             "ChannelModifySchema": {
                 "type": "object",
@@ -947,13 +1022,12 @@
                                     "$ref": "#/definitions/ChannelPermissionOverwriteType"
                                 },
                                 "allow": {
-                                    "type": "bigint"
+                                    "type": "string"
                                 },
                                 "deny": {
-                                    "type": "bigint"
+                                    "type": "string"
                                 }
                             },
-                            "additionalProperties": false,
                             "required": [
                                 "allow",
                                 "deny",
@@ -977,17 +1051,66 @@
                     "default_auto_archive_duration": {
                         "type": "integer"
                     }
-                },
-                "additionalProperties": false
+                }
             },
-            "RelationshipType": {
-                "enum": [
-                    1,
-                    2,
-                    3,
-                    4
-                ],
-                "type": "number"
+            "UserPublic": {
+                "type": "object",
+                "properties": {
+                    "username": {
+                        "type": "string"
+                    },
+                    "discriminator": {
+                        "type": "string"
+                    },
+                    "id": {
+                        "type": "string"
+                    },
+                    "public_flags": {
+                        "type": "integer"
+                    },
+                    "avatar": {
+                        "type": "string"
+                    },
+                    "accent_color": {
+                        "type": "integer"
+                    },
+                    "banner": {
+                        "type": "string"
+                    },
+                    "bio": {
+                        "type": "string"
+                    },
+                    "bot": {
+                        "type": "boolean"
+                    }
+                },
+                "required": [
+                    "bio",
+                    "bot",
+                    "discriminator",
+                    "id",
+                    "public_flags",
+                    "username"
+                ]
+            },
+            "PublicConnectedAccount": {
+                "type": "object",
+                "properties": {
+                    "name": {
+                        "type": "string"
+                    },
+                    "type": {
+                        "type": "string"
+                    },
+                    "verifie": {
+                        "type": "boolean"
+                    }
+                },
+                "required": [
+                    "name",
+                    "type",
+                    "verifie"
+                ]
             }
         },
         "$schema": "http://json-schema.org/draft-07/schema#"
@@ -1002,7 +1125,6 @@
                 "type": "integer"
             }
         },
-        "additionalProperties": false,
         "definitions": {
             "ChannelPermissionOverwriteType": {
                 "enum": [
@@ -1054,7 +1176,6 @@
                                 "type": "string"
                             }
                         },
-                        "additionalProperties": false,
                         "required": [
                             "text"
                         ]
@@ -1077,8 +1198,7 @@
                             "url": {
                                 "type": "string"
                             }
-                        },
-                        "additionalProperties": false
+                        }
                     },
                     "author": {
                         "type": "object",
@@ -1095,8 +1215,7 @@
                             "proxy_icon_url": {
                                 "type": "string"
                             }
-                        },
-                        "additionalProperties": false
+                        }
                     },
                     "fields": {
                         "type": "array",
@@ -1113,15 +1232,13 @@
                                     "type": "boolean"
                                 }
                             },
-                            "additionalProperties": false,
                             "required": [
                                 "name",
                                 "value"
                             ]
                         }
                     }
-                },
-                "additionalProperties": false
+                }
             },
             "EmbedImage": {
                 "type": "object",
@@ -1138,8 +1255,7 @@
                     "width": {
                         "type": "integer"
                     }
-                },
-                "additionalProperties": false
+                }
             },
             "ChannelModifySchema": {
                 "type": "object",
@@ -1197,13 +1313,12 @@
                                     "$ref": "#/definitions/ChannelPermissionOverwriteType"
                                 },
                                 "allow": {
-                                    "type": "bigint"
+                                    "type": "string"
                                 },
                                 "deny": {
-                                    "type": "bigint"
+                                    "type": "string"
                                 }
                             },
-                            "additionalProperties": false,
                             "required": [
                                 "allow",
                                 "deny",
@@ -1227,17 +1342,66 @@
                     "default_auto_archive_duration": {
                         "type": "integer"
                     }
-                },
-                "additionalProperties": false
+                }
             },
-            "RelationshipType": {
-                "enum": [
-                    1,
-                    2,
-                    3,
-                    4
-                ],
-                "type": "number"
+            "UserPublic": {
+                "type": "object",
+                "properties": {
+                    "username": {
+                        "type": "string"
+                    },
+                    "discriminator": {
+                        "type": "string"
+                    },
+                    "id": {
+                        "type": "string"
+                    },
+                    "public_flags": {
+                        "type": "integer"
+                    },
+                    "avatar": {
+                        "type": "string"
+                    },
+                    "accent_color": {
+                        "type": "integer"
+                    },
+                    "banner": {
+                        "type": "string"
+                    },
+                    "bio": {
+                        "type": "string"
+                    },
+                    "bot": {
+                        "type": "boolean"
+                    }
+                },
+                "required": [
+                    "bio",
+                    "bot",
+                    "discriminator",
+                    "id",
+                    "public_flags",
+                    "username"
+                ]
+            },
+            "PublicConnectedAccount": {
+                "type": "object",
+                "properties": {
+                    "name": {
+                        "type": "string"
+                    },
+                    "type": {
+                        "type": "string"
+                    },
+                    "verifie": {
+                        "type": "boolean"
+                    }
+                },
+                "required": [
+                    "name",
+                    "type",
+                    "verifie"
+                ]
             }
         },
         "$schema": "http://json-schema.org/draft-07/schema#"
@@ -1252,7 +1416,6 @@
                 }
             }
         },
-        "additionalProperties": false,
         "required": [
             "messages"
         ],
@@ -1307,7 +1470,6 @@
                                 "type": "string"
                             }
                         },
-                        "additionalProperties": false,
                         "required": [
                             "text"
                         ]
@@ -1330,8 +1492,7 @@
                             "url": {
                                 "type": "string"
                             }
-                        },
-                        "additionalProperties": false
+                        }
                     },
                     "author": {
                         "type": "object",
@@ -1348,8 +1509,7 @@
                             "proxy_icon_url": {
                                 "type": "string"
                             }
-                        },
-                        "additionalProperties": false
+                        }
                     },
                     "fields": {
                         "type": "array",
@@ -1366,15 +1526,13 @@
                                     "type": "boolean"
                                 }
                             },
-                            "additionalProperties": false,
                             "required": [
                                 "name",
                                 "value"
                             ]
                         }
                     }
-                },
-                "additionalProperties": false
+                }
             },
             "EmbedImage": {
                 "type": "object",
@@ -1391,8 +1549,7 @@
                     "width": {
                         "type": "integer"
                     }
-                },
-                "additionalProperties": false
+                }
             },
             "ChannelModifySchema": {
                 "type": "object",
@@ -1450,13 +1607,12 @@
                                     "$ref": "#/definitions/ChannelPermissionOverwriteType"
                                 },
                                 "allow": {
-                                    "type": "bigint"
+                                    "type": "string"
                                 },
                                 "deny": {
-                                    "type": "bigint"
+                                    "type": "string"
                                 }
                             },
-                            "additionalProperties": false,
                             "required": [
                                 "allow",
                                 "deny",
@@ -1480,17 +1636,66 @@
                     "default_auto_archive_duration": {
                         "type": "integer"
                     }
-                },
-                "additionalProperties": false
+                }
             },
-            "RelationshipType": {
-                "enum": [
-                    1,
-                    2,
-                    3,
-                    4
-                ],
-                "type": "number"
+            "UserPublic": {
+                "type": "object",
+                "properties": {
+                    "username": {
+                        "type": "string"
+                    },
+                    "discriminator": {
+                        "type": "string"
+                    },
+                    "id": {
+                        "type": "string"
+                    },
+                    "public_flags": {
+                        "type": "integer"
+                    },
+                    "avatar": {
+                        "type": "string"
+                    },
+                    "accent_color": {
+                        "type": "integer"
+                    },
+                    "banner": {
+                        "type": "string"
+                    },
+                    "bio": {
+                        "type": "string"
+                    },
+                    "bot": {
+                        "type": "boolean"
+                    }
+                },
+                "required": [
+                    "bio",
+                    "bot",
+                    "discriminator",
+                    "id",
+                    "public_flags",
+                    "username"
+                ]
+            },
+            "PublicConnectedAccount": {
+                "type": "object",
+                "properties": {
+                    "name": {
+                        "type": "string"
+                    },
+                    "type": {
+                        "type": "string"
+                    },
+                    "verifie": {
+                        "type": "boolean"
+                    }
+                },
+                "required": [
+                    "name",
+                    "type",
+                    "verifie"
+                ]
             }
         },
         "$schema": "http://json-schema.org/draft-07/schema#"
@@ -1499,10 +1704,10 @@
         "type": "object",
         "properties": {
             "allow": {
-                "type": "bigint"
+                "type": "string"
             },
             "deny": {
-                "type": "bigint"
+                "type": "string"
             },
             "id": {
                 "type": "string"
@@ -1511,7 +1716,6 @@
                 "$ref": "#/definitions/ChannelPermissionOverwriteType"
             }
         },
-        "additionalProperties": false,
         "required": [
             "allow",
             "deny",
@@ -1569,7 +1773,6 @@
                                 "type": "string"
                             }
                         },
-                        "additionalProperties": false,
                         "required": [
                             "text"
                         ]
@@ -1592,8 +1795,7 @@
                             "url": {
                                 "type": "string"
                             }
-                        },
-                        "additionalProperties": false
+                        }
                     },
                     "author": {
                         "type": "object",
@@ -1610,8 +1812,7 @@
                             "proxy_icon_url": {
                                 "type": "string"
                             }
-                        },
-                        "additionalProperties": false
+                        }
                     },
                     "fields": {
                         "type": "array",
@@ -1628,15 +1829,13 @@
                                     "type": "boolean"
                                 }
                             },
-                            "additionalProperties": false,
                             "required": [
                                 "name",
                                 "value"
                             ]
                         }
                     }
-                },
-                "additionalProperties": false
+                }
             },
             "EmbedImage": {
                 "type": "object",
@@ -1653,8 +1852,7 @@
                     "width": {
                         "type": "integer"
                     }
-                },
-                "additionalProperties": false
+                }
             },
             "ChannelModifySchema": {
                 "type": "object",
@@ -1712,13 +1910,12 @@
                                     "$ref": "#/definitions/ChannelPermissionOverwriteType"
                                 },
                                 "allow": {
-                                    "type": "bigint"
+                                    "type": "string"
                                 },
                                 "deny": {
-                                    "type": "bigint"
+                                    "type": "string"
                                 }
                             },
-                            "additionalProperties": false,
                             "required": [
                                 "allow",
                                 "deny",
@@ -1742,17 +1939,66 @@
                     "default_auto_archive_duration": {
                         "type": "integer"
                     }
-                },
-                "additionalProperties": false
+                }
             },
-            "RelationshipType": {
-                "enum": [
-                    1,
-                    2,
-                    3,
-                    4
-                ],
-                "type": "number"
+            "UserPublic": {
+                "type": "object",
+                "properties": {
+                    "username": {
+                        "type": "string"
+                    },
+                    "discriminator": {
+                        "type": "string"
+                    },
+                    "id": {
+                        "type": "string"
+                    },
+                    "public_flags": {
+                        "type": "integer"
+                    },
+                    "avatar": {
+                        "type": "string"
+                    },
+                    "accent_color": {
+                        "type": "integer"
+                    },
+                    "banner": {
+                        "type": "string"
+                    },
+                    "bio": {
+                        "type": "string"
+                    },
+                    "bot": {
+                        "type": "boolean"
+                    }
+                },
+                "required": [
+                    "bio",
+                    "bot",
+                    "discriminator",
+                    "id",
+                    "public_flags",
+                    "username"
+                ]
+            },
+            "PublicConnectedAccount": {
+                "type": "object",
+                "properties": {
+                    "name": {
+                        "type": "string"
+                    },
+                    "type": {
+                        "type": "string"
+                    },
+                    "verifie": {
+                        "type": "boolean"
+                    }
+                },
+                "required": [
+                    "name",
+                    "type",
+                    "verifie"
+                ]
             }
         },
         "$schema": "http://json-schema.org/draft-07/schema#"
@@ -1768,7 +2014,6 @@
                 "type": "string"
             }
         },
-        "additionalProperties": false,
         "required": [
             "avatar",
             "name"
@@ -1824,7 +2069,6 @@
                                 "type": "string"
                             }
                         },
-                        "additionalProperties": false,
                         "required": [
                             "text"
                         ]
@@ -1847,8 +2091,7 @@
                             "url": {
                                 "type": "string"
                             }
-                        },
-                        "additionalProperties": false
+                        }
                     },
                     "author": {
                         "type": "object",
@@ -1865,8 +2108,7 @@
                             "proxy_icon_url": {
                                 "type": "string"
                             }
-                        },
-                        "additionalProperties": false
+                        }
                     },
                     "fields": {
                         "type": "array",
@@ -1883,15 +2125,13 @@
                                     "type": "boolean"
                                 }
                             },
-                            "additionalProperties": false,
                             "required": [
                                 "name",
                                 "value"
                             ]
                         }
                     }
-                },
-                "additionalProperties": false
+                }
             },
             "EmbedImage": {
                 "type": "object",
@@ -1908,8 +2148,7 @@
                     "width": {
                         "type": "integer"
                     }
-                },
-                "additionalProperties": false
+                }
             },
             "ChannelModifySchema": {
                 "type": "object",
@@ -1967,13 +2206,12 @@
                                     "$ref": "#/definitions/ChannelPermissionOverwriteType"
                                 },
                                 "allow": {
-                                    "type": "bigint"
+                                    "type": "string"
                                 },
                                 "deny": {
-                                    "type": "bigint"
+                                    "type": "string"
                                 }
                             },
-                            "additionalProperties": false,
                             "required": [
                                 "allow",
                                 "deny",
@@ -1997,17 +2235,66 @@
                     "default_auto_archive_duration": {
                         "type": "integer"
                     }
-                },
-                "additionalProperties": false
+                }
             },
-            "RelationshipType": {
-                "enum": [
-                    1,
-                    2,
-                    3,
-                    4
-                ],
-                "type": "number"
+            "UserPublic": {
+                "type": "object",
+                "properties": {
+                    "username": {
+                        "type": "string"
+                    },
+                    "discriminator": {
+                        "type": "string"
+                    },
+                    "id": {
+                        "type": "string"
+                    },
+                    "public_flags": {
+                        "type": "integer"
+                    },
+                    "avatar": {
+                        "type": "string"
+                    },
+                    "accent_color": {
+                        "type": "integer"
+                    },
+                    "banner": {
+                        "type": "string"
+                    },
+                    "bio": {
+                        "type": "string"
+                    },
+                    "bot": {
+                        "type": "boolean"
+                    }
+                },
+                "required": [
+                    "bio",
+                    "bot",
+                    "discriminator",
+                    "id",
+                    "public_flags",
+                    "username"
+                ]
+            },
+            "PublicConnectedAccount": {
+                "type": "object",
+                "properties": {
+                    "name": {
+                        "type": "string"
+                    },
+                    "type": {
+                        "type": "string"
+                    },
+                    "verifie": {
+                        "type": "boolean"
+                    }
+                },
+                "required": [
+                    "name",
+                    "type",
+                    "verifie"
+                ]
             }
         },
         "$schema": "http://json-schema.org/draft-07/schema#"
@@ -2022,7 +2309,6 @@
                 "type": "string"
             }
         },
-        "additionalProperties": false,
         "definitions": {
             "ChannelPermissionOverwriteType": {
                 "enum": [
@@ -2074,7 +2360,6 @@
                                 "type": "string"
                             }
                         },
-                        "additionalProperties": false,
                         "required": [
                             "text"
                         ]
@@ -2097,8 +2382,7 @@
                             "url": {
                                 "type": "string"
                             }
-                        },
-                        "additionalProperties": false
+                        }
                     },
                     "author": {
                         "type": "object",
@@ -2115,8 +2399,7 @@
                             "proxy_icon_url": {
                                 "type": "string"
                             }
-                        },
-                        "additionalProperties": false
+                        }
                     },
                     "fields": {
                         "type": "array",
@@ -2133,15 +2416,13 @@
                                     "type": "boolean"
                                 }
                             },
-                            "additionalProperties": false,
                             "required": [
                                 "name",
                                 "value"
                             ]
                         }
                     }
-                },
-                "additionalProperties": false
+                }
             },
             "EmbedImage": {
                 "type": "object",
@@ -2158,8 +2439,7 @@
                     "width": {
                         "type": "integer"
                     }
-                },
-                "additionalProperties": false
+                }
             },
             "ChannelModifySchema": {
                 "type": "object",
@@ -2217,13 +2497,12 @@
                                     "$ref": "#/definitions/ChannelPermissionOverwriteType"
                                 },
                                 "allow": {
-                                    "type": "bigint"
+                                    "type": "string"
                                 },
                                 "deny": {
-                                    "type": "bigint"
+                                    "type": "string"
                                 }
                             },
-                            "additionalProperties": false,
                             "required": [
                                 "allow",
                                 "deny",
@@ -2247,17 +2526,66 @@
                     "default_auto_archive_duration": {
                         "type": "integer"
                     }
-                },
-                "additionalProperties": false
+                }
             },
-            "RelationshipType": {
-                "enum": [
-                    1,
-                    2,
-                    3,
-                    4
-                ],
-                "type": "number"
+            "UserPublic": {
+                "type": "object",
+                "properties": {
+                    "username": {
+                        "type": "string"
+                    },
+                    "discriminator": {
+                        "type": "string"
+                    },
+                    "id": {
+                        "type": "string"
+                    },
+                    "public_flags": {
+                        "type": "integer"
+                    },
+                    "avatar": {
+                        "type": "string"
+                    },
+                    "accent_color": {
+                        "type": "integer"
+                    },
+                    "banner": {
+                        "type": "string"
+                    },
+                    "bio": {
+                        "type": "string"
+                    },
+                    "bot": {
+                        "type": "boolean"
+                    }
+                },
+                "required": [
+                    "bio",
+                    "bot",
+                    "discriminator",
+                    "id",
+                    "public_flags",
+                    "username"
+                ]
+            },
+            "PublicConnectedAccount": {
+                "type": "object",
+                "properties": {
+                    "name": {
+                        "type": "string"
+                    },
+                    "type": {
+                        "type": "string"
+                    },
+                    "verifie": {
+                        "type": "boolean"
+                    }
+                },
+                "required": [
+                    "name",
+                    "type",
+                    "verifie"
+                ]
             }
         },
         "$schema": "http://json-schema.org/draft-07/schema#"
@@ -2280,7 +2608,6 @@
                     "type": "string"
                 }
             },
-            "additionalProperties": false,
             "required": [
                 "id"
             ]
@@ -2336,7 +2663,6 @@
                                 "type": "string"
                             }
                         },
-                        "additionalProperties": false,
                         "required": [
                             "text"
                         ]
@@ -2359,8 +2685,7 @@
                             "url": {
                                 "type": "string"
                             }
-                        },
-                        "additionalProperties": false
+                        }
                     },
                     "author": {
                         "type": "object",
@@ -2377,8 +2702,7 @@
                             "proxy_icon_url": {
                                 "type": "string"
                             }
-                        },
-                        "additionalProperties": false
+                        }
                     },
                     "fields": {
                         "type": "array",
@@ -2395,15 +2719,13 @@
                                     "type": "boolean"
                                 }
                             },
-                            "additionalProperties": false,
                             "required": [
                                 "name",
                                 "value"
                             ]
                         }
                     }
-                },
-                "additionalProperties": false
+                }
             },
             "EmbedImage": {
                 "type": "object",
@@ -2420,8 +2742,7 @@
                     "width": {
                         "type": "integer"
                     }
-                },
-                "additionalProperties": false
+                }
             },
             "ChannelModifySchema": {
                 "type": "object",
@@ -2479,13 +2800,12 @@
                                     "$ref": "#/definitions/ChannelPermissionOverwriteType"
                                 },
                                 "allow": {
-                                    "type": "bigint"
+                                    "type": "string"
                                 },
                                 "deny": {
-                                    "type": "bigint"
+                                    "type": "string"
                                 }
                             },
-                            "additionalProperties": false,
                             "required": [
                                 "allow",
                                 "deny",
@@ -2509,17 +2829,666 @@
                     "default_auto_archive_duration": {
                         "type": "integer"
                     }
-                },
-                "additionalProperties": false
+                }
             },
-            "RelationshipType": {
+            "UserPublic": {
+                "type": "object",
+                "properties": {
+                    "username": {
+                        "type": "string"
+                    },
+                    "discriminator": {
+                        "type": "string"
+                    },
+                    "id": {
+                        "type": "string"
+                    },
+                    "public_flags": {
+                        "type": "integer"
+                    },
+                    "avatar": {
+                        "type": "string"
+                    },
+                    "accent_color": {
+                        "type": "integer"
+                    },
+                    "banner": {
+                        "type": "string"
+                    },
+                    "bio": {
+                        "type": "string"
+                    },
+                    "bot": {
+                        "type": "boolean"
+                    }
+                },
+                "required": [
+                    "bio",
+                    "bot",
+                    "discriminator",
+                    "id",
+                    "public_flags",
+                    "username"
+                ]
+            },
+            "PublicConnectedAccount": {
+                "type": "object",
+                "properties": {
+                    "name": {
+                        "type": "string"
+                    },
+                    "type": {
+                        "type": "string"
+                    },
+                    "verifie": {
+                        "type": "boolean"
+                    }
+                },
+                "required": [
+                    "name",
+                    "type",
+                    "verifie"
+                ]
+            }
+        },
+        "$schema": "http://json-schema.org/draft-07/schema#"
+    },
+    "EmojiCreateSchema": {
+        "type": "object",
+        "properties": {
+            "name": {
+                "type": "string"
+            },
+            "image": {
+                "type": "string"
+            },
+            "require_colons": {
+                "type": [
+                    "null",
+                    "boolean"
+                ]
+            },
+            "roles": {
+                "type": "array",
+                "items": {
+                    "type": "string"
+                }
+            }
+        },
+        "required": [
+            "image"
+        ],
+        "definitions": {
+            "ChannelPermissionOverwriteType": {
                 "enum": [
-                    1,
-                    2,
-                    3,
-                    4
+                    0,
+                    1
                 ],
                 "type": "number"
+            },
+            "Embed": {
+                "type": "object",
+                "properties": {
+                    "title": {
+                        "type": "string"
+                    },
+                    "type": {
+                        "enum": [
+                            "article",
+                            "gifv",
+                            "image",
+                            "link",
+                            "rich",
+                            "video"
+                        ],
+                        "type": "string"
+                    },
+                    "description": {
+                        "type": "string"
+                    },
+                    "url": {
+                        "type": "string"
+                    },
+                    "timestamp": {
+                        "type": "string",
+                        "format": "date-time"
+                    },
+                    "color": {
+                        "type": "integer"
+                    },
+                    "footer": {
+                        "type": "object",
+                        "properties": {
+                            "text": {
+                                "type": "string"
+                            },
+                            "icon_url": {
+                                "type": "string"
+                            },
+                            "proxy_icon_url": {
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "text"
+                        ]
+                    },
+                    "image": {
+                        "$ref": "#/definitions/EmbedImage"
+                    },
+                    "thumbnail": {
+                        "$ref": "#/definitions/EmbedImage"
+                    },
+                    "video": {
+                        "$ref": "#/definitions/EmbedImage"
+                    },
+                    "provider": {
+                        "type": "object",
+                        "properties": {
+                            "name": {
+                                "type": "string"
+                            },
+                            "url": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "author": {
+                        "type": "object",
+                        "properties": {
+                            "name": {
+                                "type": "string"
+                            },
+                            "url": {
+                                "type": "string"
+                            },
+                            "icon_url": {
+                                "type": "string"
+                            },
+                            "proxy_icon_url": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "fields": {
+                        "type": "array",
+                        "items": {
+                            "type": "object",
+                            "properties": {
+                                "name": {
+                                    "type": "string"
+                                },
+                                "value": {
+                                    "type": "string"
+                                },
+                                "inline": {
+                                    "type": "boolean"
+                                }
+                            },
+                            "required": [
+                                "name",
+                                "value"
+                            ]
+                        }
+                    }
+                }
+            },
+            "EmbedImage": {
+                "type": "object",
+                "properties": {
+                    "url": {
+                        "type": "string"
+                    },
+                    "proxy_url": {
+                        "type": "string"
+                    },
+                    "height": {
+                        "type": "integer"
+                    },
+                    "width": {
+                        "type": "integer"
+                    }
+                }
+            },
+            "ChannelModifySchema": {
+                "type": "object",
+                "properties": {
+                    "name": {
+                        "maxLength": 100,
+                        "type": "string"
+                    },
+                    "type": {
+                        "enum": [
+                            0,
+                            1,
+                            10,
+                            11,
+                            12,
+                            13,
+                            2,
+                            3,
+                            4,
+                            5,
+                            6
+                        ],
+                        "type": "number"
+                    },
+                    "topic": {
+                        "type": "string"
+                    },
+                    "icon": {
+                        "type": [
+                            "null",
+                            "string"
+                        ]
+                    },
+                    "bitrate": {
+                        "type": "integer"
+                    },
+                    "user_limit": {
+                        "type": "integer"
+                    },
+                    "rate_limit_per_user": {
+                        "type": "integer"
+                    },
+                    "position": {
+                        "type": "integer"
+                    },
+                    "permission_overwrites": {
+                        "type": "array",
+                        "items": {
+                            "type": "object",
+                            "properties": {
+                                "id": {
+                                    "type": "string"
+                                },
+                                "type": {
+                                    "$ref": "#/definitions/ChannelPermissionOverwriteType"
+                                },
+                                "allow": {
+                                    "type": "string"
+                                },
+                                "deny": {
+                                    "type": "string"
+                                }
+                            },
+                            "required": [
+                                "allow",
+                                "deny",
+                                "id",
+                                "type"
+                            ]
+                        }
+                    },
+                    "parent_id": {
+                        "type": "string"
+                    },
+                    "id": {
+                        "type": "string"
+                    },
+                    "nsfw": {
+                        "type": "boolean"
+                    },
+                    "rtc_region": {
+                        "type": "string"
+                    },
+                    "default_auto_archive_duration": {
+                        "type": "integer"
+                    }
+                }
+            },
+            "UserPublic": {
+                "type": "object",
+                "properties": {
+                    "username": {
+                        "type": "string"
+                    },
+                    "discriminator": {
+                        "type": "string"
+                    },
+                    "id": {
+                        "type": "string"
+                    },
+                    "public_flags": {
+                        "type": "integer"
+                    },
+                    "avatar": {
+                        "type": "string"
+                    },
+                    "accent_color": {
+                        "type": "integer"
+                    },
+                    "banner": {
+                        "type": "string"
+                    },
+                    "bio": {
+                        "type": "string"
+                    },
+                    "bot": {
+                        "type": "boolean"
+                    }
+                },
+                "required": [
+                    "bio",
+                    "bot",
+                    "discriminator",
+                    "id",
+                    "public_flags",
+                    "username"
+                ]
+            },
+            "PublicConnectedAccount": {
+                "type": "object",
+                "properties": {
+                    "name": {
+                        "type": "string"
+                    },
+                    "type": {
+                        "type": "string"
+                    },
+                    "verifie": {
+                        "type": "boolean"
+                    }
+                },
+                "required": [
+                    "name",
+                    "type",
+                    "verifie"
+                ]
+            }
+        },
+        "$schema": "http://json-schema.org/draft-07/schema#"
+    },
+    "EmojiModifySchema": {
+        "type": "object",
+        "properties": {
+            "name": {
+                "type": "string"
+            },
+            "roles": {
+                "type": "array",
+                "items": {
+                    "type": "string"
+                }
+            }
+        },
+        "definitions": {
+            "ChannelPermissionOverwriteType": {
+                "enum": [
+                    0,
+                    1
+                ],
+                "type": "number"
+            },
+            "Embed": {
+                "type": "object",
+                "properties": {
+                    "title": {
+                        "type": "string"
+                    },
+                    "type": {
+                        "enum": [
+                            "article",
+                            "gifv",
+                            "image",
+                            "link",
+                            "rich",
+                            "video"
+                        ],
+                        "type": "string"
+                    },
+                    "description": {
+                        "type": "string"
+                    },
+                    "url": {
+                        "type": "string"
+                    },
+                    "timestamp": {
+                        "type": "string",
+                        "format": "date-time"
+                    },
+                    "color": {
+                        "type": "integer"
+                    },
+                    "footer": {
+                        "type": "object",
+                        "properties": {
+                            "text": {
+                                "type": "string"
+                            },
+                            "icon_url": {
+                                "type": "string"
+                            },
+                            "proxy_icon_url": {
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "text"
+                        ]
+                    },
+                    "image": {
+                        "$ref": "#/definitions/EmbedImage"
+                    },
+                    "thumbnail": {
+                        "$ref": "#/definitions/EmbedImage"
+                    },
+                    "video": {
+                        "$ref": "#/definitions/EmbedImage"
+                    },
+                    "provider": {
+                        "type": "object",
+                        "properties": {
+                            "name": {
+                                "type": "string"
+                            },
+                            "url": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "author": {
+                        "type": "object",
+                        "properties": {
+                            "name": {
+                                "type": "string"
+                            },
+                            "url": {
+                                "type": "string"
+                            },
+                            "icon_url": {
+                                "type": "string"
+                            },
+                            "proxy_icon_url": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "fields": {
+                        "type": "array",
+                        "items": {
+                            "type": "object",
+                            "properties": {
+                                "name": {
+                                    "type": "string"
+                                },
+                                "value": {
+                                    "type": "string"
+                                },
+                                "inline": {
+                                    "type": "boolean"
+                                }
+                            },
+                            "required": [
+                                "name",
+                                "value"
+                            ]
+                        }
+                    }
+                }
+            },
+            "EmbedImage": {
+                "type": "object",
+                "properties": {
+                    "url": {
+                        "type": "string"
+                    },
+                    "proxy_url": {
+                        "type": "string"
+                    },
+                    "height": {
+                        "type": "integer"
+                    },
+                    "width": {
+                        "type": "integer"
+                    }
+                }
+            },
+            "ChannelModifySchema": {
+                "type": "object",
+                "properties": {
+                    "name": {
+                        "maxLength": 100,
+                        "type": "string"
+                    },
+                    "type": {
+                        "enum": [
+                            0,
+                            1,
+                            10,
+                            11,
+                            12,
+                            13,
+                            2,
+                            3,
+                            4,
+                            5,
+                            6
+                        ],
+                        "type": "number"
+                    },
+                    "topic": {
+                        "type": "string"
+                    },
+                    "icon": {
+                        "type": [
+                            "null",
+                            "string"
+                        ]
+                    },
+                    "bitrate": {
+                        "type": "integer"
+                    },
+                    "user_limit": {
+                        "type": "integer"
+                    },
+                    "rate_limit_per_user": {
+                        "type": "integer"
+                    },
+                    "position": {
+                        "type": "integer"
+                    },
+                    "permission_overwrites": {
+                        "type": "array",
+                        "items": {
+                            "type": "object",
+                            "properties": {
+                                "id": {
+                                    "type": "string"
+                                },
+                                "type": {
+                                    "$ref": "#/definitions/ChannelPermissionOverwriteType"
+                                },
+                                "allow": {
+                                    "type": "string"
+                                },
+                                "deny": {
+                                    "type": "string"
+                                }
+                            },
+                            "required": [
+                                "allow",
+                                "deny",
+                                "id",
+                                "type"
+                            ]
+                        }
+                    },
+                    "parent_id": {
+                        "type": "string"
+                    },
+                    "id": {
+                        "type": "string"
+                    },
+                    "nsfw": {
+                        "type": "boolean"
+                    },
+                    "rtc_region": {
+                        "type": "string"
+                    },
+                    "default_auto_archive_duration": {
+                        "type": "integer"
+                    }
+                }
+            },
+            "UserPublic": {
+                "type": "object",
+                "properties": {
+                    "username": {
+                        "type": "string"
+                    },
+                    "discriminator": {
+                        "type": "string"
+                    },
+                    "id": {
+                        "type": "string"
+                    },
+                    "public_flags": {
+                        "type": "integer"
+                    },
+                    "avatar": {
+                        "type": "string"
+                    },
+                    "accent_color": {
+                        "type": "integer"
+                    },
+                    "banner": {
+                        "type": "string"
+                    },
+                    "bio": {
+                        "type": "string"
+                    },
+                    "bot": {
+                        "type": "boolean"
+                    }
+                },
+                "required": [
+                    "bio",
+                    "bot",
+                    "discriminator",
+                    "id",
+                    "public_flags",
+                    "username"
+                ]
+            },
+            "PublicConnectedAccount": {
+                "type": "object",
+                "properties": {
+                    "name": {
+                        "type": "string"
+                    },
+                    "type": {
+                        "type": "string"
+                    },
+                    "verifie": {
+                        "type": "boolean"
+                    }
+                },
+                "required": [
+                    "name",
+                    "type",
+                    "verifie"
+                ]
             }
         },
         "$schema": "http://json-schema.org/draft-07/schema#"
@@ -2556,7 +3525,6 @@
                 "type": "string"
             }
         },
-        "additionalProperties": false,
         "required": [
             "name"
         ],
@@ -2611,7 +3579,6 @@
                                 "type": "string"
                             }
                         },
-                        "additionalProperties": false,
                         "required": [
                             "text"
                         ]
@@ -2634,8 +3601,7 @@
                             "url": {
                                 "type": "string"
                             }
-                        },
-                        "additionalProperties": false
+                        }
                     },
                     "author": {
                         "type": "object",
@@ -2652,8 +3618,7 @@
                             "proxy_icon_url": {
                                 "type": "string"
                             }
-                        },
-                        "additionalProperties": false
+                        }
                     },
                     "fields": {
                         "type": "array",
@@ -2670,15 +3635,13 @@
                                     "type": "boolean"
                                 }
                             },
-                            "additionalProperties": false,
                             "required": [
                                 "name",
                                 "value"
                             ]
                         }
                     }
-                },
-                "additionalProperties": false
+                }
             },
             "EmbedImage": {
                 "type": "object",
@@ -2695,8 +3658,7 @@
                     "width": {
                         "type": "integer"
                     }
-                },
-                "additionalProperties": false
+                }
             },
             "ChannelModifySchema": {
                 "type": "object",
@@ -2754,13 +3716,12 @@
                                     "$ref": "#/definitions/ChannelPermissionOverwriteType"
                                 },
                                 "allow": {
-                                    "type": "bigint"
+                                    "type": "string"
                                 },
                                 "deny": {
-                                    "type": "bigint"
+                                    "type": "string"
                                 }
                             },
-                            "additionalProperties": false,
                             "required": [
                                 "allow",
                                 "deny",
@@ -2784,17 +3745,66 @@
                     "default_auto_archive_duration": {
                         "type": "integer"
                     }
-                },
-                "additionalProperties": false
+                }
             },
-            "RelationshipType": {
-                "enum": [
-                    1,
-                    2,
-                    3,
-                    4
-                ],
-                "type": "number"
+            "UserPublic": {
+                "type": "object",
+                "properties": {
+                    "username": {
+                        "type": "string"
+                    },
+                    "discriminator": {
+                        "type": "string"
+                    },
+                    "id": {
+                        "type": "string"
+                    },
+                    "public_flags": {
+                        "type": "integer"
+                    },
+                    "avatar": {
+                        "type": "string"
+                    },
+                    "accent_color": {
+                        "type": "integer"
+                    },
+                    "banner": {
+                        "type": "string"
+                    },
+                    "bio": {
+                        "type": "string"
+                    },
+                    "bot": {
+                        "type": "boolean"
+                    }
+                },
+                "required": [
+                    "bio",
+                    "bot",
+                    "discriminator",
+                    "id",
+                    "public_flags",
+                    "username"
+                ]
+            },
+            "PublicConnectedAccount": {
+                "type": "object",
+                "properties": {
+                    "name": {
+                        "type": "string"
+                    },
+                    "type": {
+                        "type": "string"
+                    },
+                    "verifie": {
+                        "type": "boolean"
+                    }
+                },
+                "required": [
+                    "name",
+                    "type",
+                    "verifie"
+                ]
             }
         },
         "$schema": "http://json-schema.org/draft-07/schema#"
@@ -2870,7 +3880,6 @@
                 "type": "string"
             }
         },
-        "additionalProperties": false,
         "required": [
             "name"
         ],
@@ -2925,7 +3934,6 @@
                                 "type": "string"
                             }
                         },
-                        "additionalProperties": false,
                         "required": [
                             "text"
                         ]
@@ -2948,8 +3956,7 @@
                             "url": {
                                 "type": "string"
                             }
-                        },
-                        "additionalProperties": false
+                        }
                     },
                     "author": {
                         "type": "object",
@@ -2966,8 +3973,7 @@
                             "proxy_icon_url": {
                                 "type": "string"
                             }
-                        },
-                        "additionalProperties": false
+                        }
                     },
                     "fields": {
                         "type": "array",
@@ -2984,15 +3990,13 @@
                                     "type": "boolean"
                                 }
                             },
-                            "additionalProperties": false,
                             "required": [
                                 "name",
                                 "value"
                             ]
                         }
                     }
-                },
-                "additionalProperties": false
+                }
             },
             "EmbedImage": {
                 "type": "object",
@@ -3009,8 +4013,7 @@
                     "width": {
                         "type": "integer"
                     }
-                },
-                "additionalProperties": false
+                }
             },
             "ChannelModifySchema": {
                 "type": "object",
@@ -3068,13 +4071,12 @@
                                     "$ref": "#/definitions/ChannelPermissionOverwriteType"
                                 },
                                 "allow": {
-                                    "type": "bigint"
+                                    "type": "string"
                                 },
                                 "deny": {
-                                    "type": "bigint"
+                                    "type": "string"
                                 }
                             },
-                            "additionalProperties": false,
                             "required": [
                                 "allow",
                                 "deny",
@@ -3098,17 +4100,66 @@
                     "default_auto_archive_duration": {
                         "type": "integer"
                     }
-                },
-                "additionalProperties": false
+                }
             },
-            "RelationshipType": {
-                "enum": [
-                    1,
-                    2,
-                    3,
-                    4
-                ],
-                "type": "number"
+            "UserPublic": {
+                "type": "object",
+                "properties": {
+                    "username": {
+                        "type": "string"
+                    },
+                    "discriminator": {
+                        "type": "string"
+                    },
+                    "id": {
+                        "type": "string"
+                    },
+                    "public_flags": {
+                        "type": "integer"
+                    },
+                    "avatar": {
+                        "type": "string"
+                    },
+                    "accent_color": {
+                        "type": "integer"
+                    },
+                    "banner": {
+                        "type": "string"
+                    },
+                    "bio": {
+                        "type": "string"
+                    },
+                    "bot": {
+                        "type": "boolean"
+                    }
+                },
+                "required": [
+                    "bio",
+                    "bot",
+                    "discriminator",
+                    "id",
+                    "public_flags",
+                    "username"
+                ]
+            },
+            "PublicConnectedAccount": {
+                "type": "object",
+                "properties": {
+                    "name": {
+                        "type": "string"
+                    },
+                    "type": {
+                        "type": "string"
+                    },
+                    "verifie": {
+                        "type": "boolean"
+                    }
+                },
+                "required": [
+                    "name",
+                    "type",
+                    "verifie"
+                ]
             }
         },
         "$schema": "http://json-schema.org/draft-07/schema#"
@@ -3123,7 +4174,6 @@
                 }
             }
         },
-        "additionalProperties": false,
         "definitions": {
             "ChannelPermissionOverwriteType": {
                 "enum": [
@@ -3175,7 +4225,6 @@
                                 "type": "string"
                             }
                         },
-                        "additionalProperties": false,
                         "required": [
                             "text"
                         ]
@@ -3198,8 +4247,7 @@
                             "url": {
                                 "type": "string"
                             }
-                        },
-                        "additionalProperties": false
+                        }
                     },
                     "author": {
                         "type": "object",
@@ -3216,8 +4264,7 @@
                             "proxy_icon_url": {
                                 "type": "string"
                             }
-                        },
-                        "additionalProperties": false
+                        }
                     },
                     "fields": {
                         "type": "array",
@@ -3234,15 +4281,13 @@
                                     "type": "boolean"
                                 }
                             },
-                            "additionalProperties": false,
                             "required": [
                                 "name",
                                 "value"
                             ]
                         }
                     }
-                },
-                "additionalProperties": false
+                }
             },
             "EmbedImage": {
                 "type": "object",
@@ -3259,8 +4304,7 @@
                     "width": {
                         "type": "integer"
                     }
-                },
-                "additionalProperties": false
+                }
             },
             "ChannelModifySchema": {
                 "type": "object",
@@ -3318,13 +4362,12 @@
                                     "$ref": "#/definitions/ChannelPermissionOverwriteType"
                                 },
                                 "allow": {
-                                    "type": "bigint"
+                                    "type": "string"
                                 },
                                 "deny": {
-                                    "type": "bigint"
+                                    "type": "string"
                                 }
                             },
-                            "additionalProperties": false,
                             "required": [
                                 "allow",
                                 "deny",
@@ -3348,17 +4391,66 @@
                     "default_auto_archive_duration": {
                         "type": "integer"
                     }
-                },
-                "additionalProperties": false
+                }
             },
-            "RelationshipType": {
-                "enum": [
-                    1,
-                    2,
-                    3,
-                    4
-                ],
-                "type": "number"
+            "UserPublic": {
+                "type": "object",
+                "properties": {
+                    "username": {
+                        "type": "string"
+                    },
+                    "discriminator": {
+                        "type": "string"
+                    },
+                    "id": {
+                        "type": "string"
+                    },
+                    "public_flags": {
+                        "type": "integer"
+                    },
+                    "avatar": {
+                        "type": "string"
+                    },
+                    "accent_color": {
+                        "type": "integer"
+                    },
+                    "banner": {
+                        "type": "string"
+                    },
+                    "bio": {
+                        "type": "string"
+                    },
+                    "bot": {
+                        "type": "boolean"
+                    }
+                },
+                "required": [
+                    "bio",
+                    "bot",
+                    "discriminator",
+                    "id",
+                    "public_flags",
+                    "username"
+                ]
+            },
+            "PublicConnectedAccount": {
+                "type": "object",
+                "properties": {
+                    "name": {
+                        "type": "string"
+                    },
+                    "type": {
+                        "type": "string"
+                    },
+                    "verifie": {
+                        "type": "boolean"
+                    }
+                },
+                "required": [
+                    "name",
+                    "type",
+                    "verifie"
+                ]
             }
         },
         "$schema": "http://json-schema.org/draft-07/schema#"
@@ -3370,7 +4462,6 @@
                 "type": "string"
             }
         },
-        "additionalProperties": false,
         "required": [
             "nick"
         ],
@@ -3425,7 +4516,6 @@
                                 "type": "string"
                             }
                         },
-                        "additionalProperties": false,
                         "required": [
                             "text"
                         ]
@@ -3448,8 +4538,7 @@
                             "url": {
                                 "type": "string"
                             }
-                        },
-                        "additionalProperties": false
+                        }
                     },
                     "author": {
                         "type": "object",
@@ -3466,8 +4555,7 @@
                             "proxy_icon_url": {
                                 "type": "string"
                             }
-                        },
-                        "additionalProperties": false
+                        }
                     },
                     "fields": {
                         "type": "array",
@@ -3484,15 +4572,13 @@
                                     "type": "boolean"
                                 }
                             },
-                            "additionalProperties": false,
                             "required": [
                                 "name",
                                 "value"
                             ]
                         }
                     }
-                },
-                "additionalProperties": false
+                }
             },
             "EmbedImage": {
                 "type": "object",
@@ -3509,8 +4595,7 @@
                     "width": {
                         "type": "integer"
                     }
-                },
-                "additionalProperties": false
+                }
             },
             "ChannelModifySchema": {
                 "type": "object",
@@ -3568,13 +4653,12 @@
                                     "$ref": "#/definitions/ChannelPermissionOverwriteType"
                                 },
                                 "allow": {
-                                    "type": "bigint"
+                                    "type": "string"
                                 },
                                 "deny": {
-                                    "type": "bigint"
+                                    "type": "string"
                                 }
                             },
-                            "additionalProperties": false,
                             "required": [
                                 "allow",
                                 "deny",
@@ -3598,17 +4682,66 @@
                     "default_auto_archive_duration": {
                         "type": "integer"
                     }
-                },
-                "additionalProperties": false
+                }
             },
-            "RelationshipType": {
-                "enum": [
-                    1,
-                    2,
-                    3,
-                    4
-                ],
-                "type": "number"
+            "UserPublic": {
+                "type": "object",
+                "properties": {
+                    "username": {
+                        "type": "string"
+                    },
+                    "discriminator": {
+                        "type": "string"
+                    },
+                    "id": {
+                        "type": "string"
+                    },
+                    "public_flags": {
+                        "type": "integer"
+                    },
+                    "avatar": {
+                        "type": "string"
+                    },
+                    "accent_color": {
+                        "type": "integer"
+                    },
+                    "banner": {
+                        "type": "string"
+                    },
+                    "bio": {
+                        "type": "string"
+                    },
+                    "bot": {
+                        "type": "boolean"
+                    }
+                },
+                "required": [
+                    "bio",
+                    "bot",
+                    "discriminator",
+                    "id",
+                    "public_flags",
+                    "username"
+                ]
+            },
+            "PublicConnectedAccount": {
+                "type": "object",
+                "properties": {
+                    "name": {
+                        "type": "string"
+                    },
+                    "type": {
+                        "type": "string"
+                    },
+                    "verifie": {
+                        "type": "boolean"
+                    }
+                },
+                "required": [
+                    "name",
+                    "type",
+                    "verifie"
+                ]
             }
         },
         "$schema": "http://json-schema.org/draft-07/schema#"
@@ -3635,7 +4768,6 @@
                 "type": "integer"
             }
         },
-        "additionalProperties": false,
         "definitions": {
             "ChannelPermissionOverwriteType": {
                 "enum": [
@@ -3687,7 +4819,6 @@
                                 "type": "string"
                             }
                         },
-                        "additionalProperties": false,
                         "required": [
                             "text"
                         ]
@@ -3710,8 +4841,7 @@
                             "url": {
                                 "type": "string"
                             }
-                        },
-                        "additionalProperties": false
+                        }
                     },
                     "author": {
                         "type": "object",
@@ -3728,8 +4858,7 @@
                             "proxy_icon_url": {
                                 "type": "string"
                             }
-                        },
-                        "additionalProperties": false
+                        }
                     },
                     "fields": {
                         "type": "array",
@@ -3746,15 +4875,13 @@
                                     "type": "boolean"
                                 }
                             },
-                            "additionalProperties": false,
                             "required": [
                                 "name",
                                 "value"
                             ]
                         }
                     }
-                },
-                "additionalProperties": false
+                }
             },
             "EmbedImage": {
                 "type": "object",
@@ -3771,8 +4898,7 @@
                     "width": {
                         "type": "integer"
                     }
-                },
-                "additionalProperties": false
+                }
             },
             "ChannelModifySchema": {
                 "type": "object",
@@ -3830,13 +4956,12 @@
                                     "$ref": "#/definitions/ChannelPermissionOverwriteType"
                                 },
                                 "allow": {
-                                    "type": "bigint"
+                                    "type": "string"
                                 },
                                 "deny": {
-                                    "type": "bigint"
+                                    "type": "string"
                                 }
                             },
-                            "additionalProperties": false,
                             "required": [
                                 "allow",
                                 "deny",
@@ -3860,17 +4985,66 @@
                     "default_auto_archive_duration": {
                         "type": "integer"
                     }
-                },
-                "additionalProperties": false
+                }
             },
-            "RelationshipType": {
-                "enum": [
-                    1,
-                    2,
-                    3,
-                    4
-                ],
-                "type": "number"
+            "UserPublic": {
+                "type": "object",
+                "properties": {
+                    "username": {
+                        "type": "string"
+                    },
+                    "discriminator": {
+                        "type": "string"
+                    },
+                    "id": {
+                        "type": "string"
+                    },
+                    "public_flags": {
+                        "type": "integer"
+                    },
+                    "avatar": {
+                        "type": "string"
+                    },
+                    "accent_color": {
+                        "type": "integer"
+                    },
+                    "banner": {
+                        "type": "string"
+                    },
+                    "bio": {
+                        "type": "string"
+                    },
+                    "bot": {
+                        "type": "boolean"
+                    }
+                },
+                "required": [
+                    "bio",
+                    "bot",
+                    "discriminator",
+                    "id",
+                    "public_flags",
+                    "username"
+                ]
+            },
+            "PublicConnectedAccount": {
+                "type": "object",
+                "properties": {
+                    "name": {
+                        "type": "string"
+                    },
+                    "type": {
+                        "type": "string"
+                    },
+                    "verifie": {
+                        "type": "boolean"
+                    }
+                },
+                "required": [
+                    "name",
+                    "type",
+                    "verifie"
+                ]
             }
         },
         "$schema": "http://json-schema.org/draft-07/schema#"
@@ -3887,7 +5061,6 @@
                     "type": "integer"
                 }
             },
-            "additionalProperties": false,
             "required": [
                 "id",
                 "position"
@@ -3944,7 +5117,6 @@
                                 "type": "string"
                             }
                         },
-                        "additionalProperties": false,
                         "required": [
                             "text"
                         ]
@@ -3967,8 +5139,7 @@
                             "url": {
                                 "type": "string"
                             }
-                        },
-                        "additionalProperties": false
+                        }
                     },
                     "author": {
                         "type": "object",
@@ -3985,8 +5156,7 @@
                             "proxy_icon_url": {
                                 "type": "string"
                             }
-                        },
-                        "additionalProperties": false
+                        }
                     },
                     "fields": {
                         "type": "array",
@@ -4003,15 +5173,13 @@
                                     "type": "boolean"
                                 }
                             },
-                            "additionalProperties": false,
                             "required": [
                                 "name",
                                 "value"
                             ]
                         }
                     }
-                },
-                "additionalProperties": false
+                }
             },
             "EmbedImage": {
                 "type": "object",
@@ -4028,8 +5196,7 @@
                     "width": {
                         "type": "integer"
                     }
-                },
-                "additionalProperties": false
+                }
             },
             "ChannelModifySchema": {
                 "type": "object",
@@ -4087,13 +5254,12 @@
                                     "$ref": "#/definitions/ChannelPermissionOverwriteType"
                                 },
                                 "allow": {
-                                    "type": "bigint"
+                                    "type": "string"
                                 },
                                 "deny": {
-                                    "type": "bigint"
+                                    "type": "string"
                                 }
                             },
-                            "additionalProperties": false,
                             "required": [
                                 "allow",
                                 "deny",
@@ -4117,17 +5283,368 @@
                     "default_auto_archive_duration": {
                         "type": "integer"
                     }
-                },
-                "additionalProperties": false
+                }
             },
-            "RelationshipType": {
+            "UserPublic": {
+                "type": "object",
+                "properties": {
+                    "username": {
+                        "type": "string"
+                    },
+                    "discriminator": {
+                        "type": "string"
+                    },
+                    "id": {
+                        "type": "string"
+                    },
+                    "public_flags": {
+                        "type": "integer"
+                    },
+                    "avatar": {
+                        "type": "string"
+                    },
+                    "accent_color": {
+                        "type": "integer"
+                    },
+                    "banner": {
+                        "type": "string"
+                    },
+                    "bio": {
+                        "type": "string"
+                    },
+                    "bot": {
+                        "type": "boolean"
+                    }
+                },
+                "required": [
+                    "bio",
+                    "bot",
+                    "discriminator",
+                    "id",
+                    "public_flags",
+                    "username"
+                ]
+            },
+            "PublicConnectedAccount": {
+                "type": "object",
+                "properties": {
+                    "name": {
+                        "type": "string"
+                    },
+                    "type": {
+                        "type": "string"
+                    },
+                    "verifie": {
+                        "type": "boolean"
+                    }
+                },
+                "required": [
+                    "name",
+                    "type",
+                    "verifie"
+                ]
+            }
+        },
+        "$schema": "http://json-schema.org/draft-07/schema#"
+    },
+    "ModifyGuildStickerSchema": {
+        "type": "object",
+        "properties": {
+            "name": {
+                "minLength": 2,
+                "maxLength": 30,
+                "type": "string"
+            },
+            "description": {
+                "maxLength": 100,
+                "type": "string"
+            },
+            "tags": {
+                "maxLength": 200,
+                "type": "string"
+            }
+        },
+        "required": [
+            "name",
+            "tags"
+        ],
+        "definitions": {
+            "ChannelPermissionOverwriteType": {
                 "enum": [
-                    1,
-                    2,
-                    3,
-                    4
+                    0,
+                    1
                 ],
                 "type": "number"
+            },
+            "Embed": {
+                "type": "object",
+                "properties": {
+                    "title": {
+                        "type": "string"
+                    },
+                    "type": {
+                        "enum": [
+                            "article",
+                            "gifv",
+                            "image",
+                            "link",
+                            "rich",
+                            "video"
+                        ],
+                        "type": "string"
+                    },
+                    "description": {
+                        "type": "string"
+                    },
+                    "url": {
+                        "type": "string"
+                    },
+                    "timestamp": {
+                        "type": "string",
+                        "format": "date-time"
+                    },
+                    "color": {
+                        "type": "integer"
+                    },
+                    "footer": {
+                        "type": "object",
+                        "properties": {
+                            "text": {
+                                "type": "string"
+                            },
+                            "icon_url": {
+                                "type": "string"
+                            },
+                            "proxy_icon_url": {
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "text"
+                        ]
+                    },
+                    "image": {
+                        "$ref": "#/definitions/EmbedImage"
+                    },
+                    "thumbnail": {
+                        "$ref": "#/definitions/EmbedImage"
+                    },
+                    "video": {
+                        "$ref": "#/definitions/EmbedImage"
+                    },
+                    "provider": {
+                        "type": "object",
+                        "properties": {
+                            "name": {
+                                "type": "string"
+                            },
+                            "url": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "author": {
+                        "type": "object",
+                        "properties": {
+                            "name": {
+                                "type": "string"
+                            },
+                            "url": {
+                                "type": "string"
+                            },
+                            "icon_url": {
+                                "type": "string"
+                            },
+                            "proxy_icon_url": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "fields": {
+                        "type": "array",
+                        "items": {
+                            "type": "object",
+                            "properties": {
+                                "name": {
+                                    "type": "string"
+                                },
+                                "value": {
+                                    "type": "string"
+                                },
+                                "inline": {
+                                    "type": "boolean"
+                                }
+                            },
+                            "required": [
+                                "name",
+                                "value"
+                            ]
+                        }
+                    }
+                }
+            },
+            "EmbedImage": {
+                "type": "object",
+                "properties": {
+                    "url": {
+                        "type": "string"
+                    },
+                    "proxy_url": {
+                        "type": "string"
+                    },
+                    "height": {
+                        "type": "integer"
+                    },
+                    "width": {
+                        "type": "integer"
+                    }
+                }
+            },
+            "ChannelModifySchema": {
+                "type": "object",
+                "properties": {
+                    "name": {
+                        "maxLength": 100,
+                        "type": "string"
+                    },
+                    "type": {
+                        "enum": [
+                            0,
+                            1,
+                            10,
+                            11,
+                            12,
+                            13,
+                            2,
+                            3,
+                            4,
+                            5,
+                            6
+                        ],
+                        "type": "number"
+                    },
+                    "topic": {
+                        "type": "string"
+                    },
+                    "icon": {
+                        "type": [
+                            "null",
+                            "string"
+                        ]
+                    },
+                    "bitrate": {
+                        "type": "integer"
+                    },
+                    "user_limit": {
+                        "type": "integer"
+                    },
+                    "rate_limit_per_user": {
+                        "type": "integer"
+                    },
+                    "position": {
+                        "type": "integer"
+                    },
+                    "permission_overwrites": {
+                        "type": "array",
+                        "items": {
+                            "type": "object",
+                            "properties": {
+                                "id": {
+                                    "type": "string"
+                                },
+                                "type": {
+                                    "$ref": "#/definitions/ChannelPermissionOverwriteType"
+                                },
+                                "allow": {
+                                    "type": "string"
+                                },
+                                "deny": {
+                                    "type": "string"
+                                }
+                            },
+                            "required": [
+                                "allow",
+                                "deny",
+                                "id",
+                                "type"
+                            ]
+                        }
+                    },
+                    "parent_id": {
+                        "type": "string"
+                    },
+                    "id": {
+                        "type": "string"
+                    },
+                    "nsfw": {
+                        "type": "boolean"
+                    },
+                    "rtc_region": {
+                        "type": "string"
+                    },
+                    "default_auto_archive_duration": {
+                        "type": "integer"
+                    }
+                }
+            },
+            "UserPublic": {
+                "type": "object",
+                "properties": {
+                    "username": {
+                        "type": "string"
+                    },
+                    "discriminator": {
+                        "type": "string"
+                    },
+                    "id": {
+                        "type": "string"
+                    },
+                    "public_flags": {
+                        "type": "integer"
+                    },
+                    "avatar": {
+                        "type": "string"
+                    },
+                    "accent_color": {
+                        "type": "integer"
+                    },
+                    "banner": {
+                        "type": "string"
+                    },
+                    "bio": {
+                        "type": "string"
+                    },
+                    "bot": {
+                        "type": "boolean"
+                    }
+                },
+                "required": [
+                    "bio",
+                    "bot",
+                    "discriminator",
+                    "id",
+                    "public_flags",
+                    "username"
+                ]
+            },
+            "PublicConnectedAccount": {
+                "type": "object",
+                "properties": {
+                    "name": {
+                        "type": "string"
+                    },
+                    "type": {
+                        "type": "string"
+                    },
+                    "verifie": {
+                        "type": "boolean"
+                    }
+                },
+                "required": [
+                    "name",
+                    "type",
+                    "verifie"
+                ]
             }
         },
         "$schema": "http://json-schema.org/draft-07/schema#"
@@ -4142,7 +5659,6 @@
                 "type": "string"
             }
         },
-        "additionalProperties": false,
         "required": [
             "name"
         ],
@@ -4197,7 +5713,6 @@
                                 "type": "string"
                             }
                         },
-                        "additionalProperties": false,
                         "required": [
                             "text"
                         ]
@@ -4220,8 +5735,7 @@
                             "url": {
                                 "type": "string"
                             }
-                        },
-                        "additionalProperties": false
+                        }
                     },
                     "author": {
                         "type": "object",
@@ -4238,8 +5752,7 @@
                             "proxy_icon_url": {
                                 "type": "string"
                             }
-                        },
-                        "additionalProperties": false
+                        }
                     },
                     "fields": {
                         "type": "array",
@@ -4256,15 +5769,13 @@
                                     "type": "boolean"
                                 }
                             },
-                            "additionalProperties": false,
                             "required": [
                                 "name",
                                 "value"
                             ]
                         }
                     }
-                },
-                "additionalProperties": false
+                }
             },
             "EmbedImage": {
                 "type": "object",
@@ -4281,8 +5792,7 @@
                     "width": {
                         "type": "integer"
                     }
-                },
-                "additionalProperties": false
+                }
             },
             "ChannelModifySchema": {
                 "type": "object",
@@ -4340,13 +5850,12 @@
                                     "$ref": "#/definitions/ChannelPermissionOverwriteType"
                                 },
                                 "allow": {
-                                    "type": "bigint"
+                                    "type": "string"
                                 },
                                 "deny": {
-                                    "type": "bigint"
+                                    "type": "string"
                                 }
                             },
-                            "additionalProperties": false,
                             "required": [
                                 "allow",
                                 "deny",
@@ -4370,17 +5879,66 @@
                     "default_auto_archive_duration": {
                         "type": "integer"
                     }
-                },
-                "additionalProperties": false
+                }
             },
-            "RelationshipType": {
-                "enum": [
-                    1,
-                    2,
-                    3,
-                    4
-                ],
-                "type": "number"
+            "UserPublic": {
+                "type": "object",
+                "properties": {
+                    "username": {
+                        "type": "string"
+                    },
+                    "discriminator": {
+                        "type": "string"
+                    },
+                    "id": {
+                        "type": "string"
+                    },
+                    "public_flags": {
+                        "type": "integer"
+                    },
+                    "avatar": {
+                        "type": "string"
+                    },
+                    "accent_color": {
+                        "type": "integer"
+                    },
+                    "banner": {
+                        "type": "string"
+                    },
+                    "bio": {
+                        "type": "string"
+                    },
+                    "bot": {
+                        "type": "boolean"
+                    }
+                },
+                "required": [
+                    "bio",
+                    "bot",
+                    "discriminator",
+                    "id",
+                    "public_flags",
+                    "username"
+                ]
+            },
+            "PublicConnectedAccount": {
+                "type": "object",
+                "properties": {
+                    "name": {
+                        "type": "string"
+                    },
+                    "type": {
+                        "type": "string"
+                    },
+                    "verifie": {
+                        "type": "boolean"
+                    }
+                },
+                "required": [
+                    "name",
+                    "type",
+                    "verifie"
+                ]
             }
         },
         "$schema": "http://json-schema.org/draft-07/schema#"
@@ -4395,7 +5953,6 @@
                 "type": "string"
             }
         },
-        "additionalProperties": false,
         "required": [
             "name"
         ],
@@ -4450,7 +6007,6 @@
                                 "type": "string"
                             }
                         },
-                        "additionalProperties": false,
                         "required": [
                             "text"
                         ]
@@ -4473,8 +6029,7 @@
                             "url": {
                                 "type": "string"
                             }
-                        },
-                        "additionalProperties": false
+                        }
                     },
                     "author": {
                         "type": "object",
@@ -4491,8 +6046,7 @@
                             "proxy_icon_url": {
                                 "type": "string"
                             }
-                        },
-                        "additionalProperties": false
+                        }
                     },
                     "fields": {
                         "type": "array",
@@ -4509,15 +6063,13 @@
                                     "type": "boolean"
                                 }
                             },
-                            "additionalProperties": false,
                             "required": [
                                 "name",
                                 "value"
                             ]
                         }
                     }
-                },
-                "additionalProperties": false
+                }
             },
             "EmbedImage": {
                 "type": "object",
@@ -4534,8 +6086,7 @@
                     "width": {
                         "type": "integer"
                     }
-                },
-                "additionalProperties": false
+                }
             },
             "ChannelModifySchema": {
                 "type": "object",
@@ -4593,13 +6144,12 @@
                                     "$ref": "#/definitions/ChannelPermissionOverwriteType"
                                 },
                                 "allow": {
-                                    "type": "bigint"
+                                    "type": "string"
                                 },
                                 "deny": {
-                                    "type": "bigint"
+                                    "type": "string"
                                 }
                             },
-                            "additionalProperties": false,
                             "required": [
                                 "allow",
                                 "deny",
@@ -4623,17 +6173,66 @@
                     "default_auto_archive_duration": {
                         "type": "integer"
                     }
-                },
-                "additionalProperties": false
+                }
             },
-            "RelationshipType": {
-                "enum": [
-                    1,
-                    2,
-                    3,
-                    4
-                ],
-                "type": "number"
+            "UserPublic": {
+                "type": "object",
+                "properties": {
+                    "username": {
+                        "type": "string"
+                    },
+                    "discriminator": {
+                        "type": "string"
+                    },
+                    "id": {
+                        "type": "string"
+                    },
+                    "public_flags": {
+                        "type": "integer"
+                    },
+                    "avatar": {
+                        "type": "string"
+                    },
+                    "accent_color": {
+                        "type": "integer"
+                    },
+                    "banner": {
+                        "type": "string"
+                    },
+                    "bio": {
+                        "type": "string"
+                    },
+                    "bot": {
+                        "type": "boolean"
+                    }
+                },
+                "required": [
+                    "bio",
+                    "bot",
+                    "discriminator",
+                    "id",
+                    "public_flags",
+                    "username"
+                ]
+            },
+            "PublicConnectedAccount": {
+                "type": "object",
+                "properties": {
+                    "name": {
+                        "type": "string"
+                    },
+                    "type": {
+                        "type": "string"
+                    },
+                    "verifie": {
+                        "type": "boolean"
+                    }
+                },
+                "required": [
+                    "name",
+                    "type",
+                    "verifie"
+                ]
             }
         },
         "$schema": "http://json-schema.org/draft-07/schema#"
@@ -4647,7 +6246,6 @@
                 "type": "string"
             }
         },
-        "additionalProperties": false,
         "definitions": {
             "ChannelPermissionOverwriteType": {
                 "enum": [
@@ -4699,7 +6297,6 @@
                                 "type": "string"
                             }
                         },
-                        "additionalProperties": false,
                         "required": [
                             "text"
                         ]
@@ -4722,8 +6319,7 @@
                             "url": {
                                 "type": "string"
                             }
-                        },
-                        "additionalProperties": false
+                        }
                     },
                     "author": {
                         "type": "object",
@@ -4740,8 +6336,7 @@
                             "proxy_icon_url": {
                                 "type": "string"
                             }
-                        },
-                        "additionalProperties": false
+                        }
                     },
                     "fields": {
                         "type": "array",
@@ -4758,15 +6353,13 @@
                                     "type": "boolean"
                                 }
                             },
-                            "additionalProperties": false,
                             "required": [
                                 "name",
                                 "value"
                             ]
                         }
                     }
-                },
-                "additionalProperties": false
+                }
             },
             "EmbedImage": {
                 "type": "object",
@@ -4783,8 +6376,7 @@
                     "width": {
                         "type": "integer"
                     }
-                },
-                "additionalProperties": false
+                }
             },
             "ChannelModifySchema": {
                 "type": "object",
@@ -4842,13 +6434,12 @@
                                     "$ref": "#/definitions/ChannelPermissionOverwriteType"
                                 },
                                 "allow": {
-                                    "type": "bigint"
+                                    "type": "string"
                                 },
                                 "deny": {
-                                    "type": "bigint"
+                                    "type": "string"
                                 }
                             },
-                            "additionalProperties": false,
                             "required": [
                                 "allow",
                                 "deny",
@@ -4872,17 +6463,66 @@
                     "default_auto_archive_duration": {
                         "type": "integer"
                     }
-                },
-                "additionalProperties": false
+                }
             },
-            "RelationshipType": {
-                "enum": [
-                    1,
-                    2,
-                    3,
-                    4
-                ],
-                "type": "number"
+            "UserPublic": {
+                "type": "object",
+                "properties": {
+                    "username": {
+                        "type": "string"
+                    },
+                    "discriminator": {
+                        "type": "string"
+                    },
+                    "id": {
+                        "type": "string"
+                    },
+                    "public_flags": {
+                        "type": "integer"
+                    },
+                    "avatar": {
+                        "type": "string"
+                    },
+                    "accent_color": {
+                        "type": "integer"
+                    },
+                    "banner": {
+                        "type": "string"
+                    },
+                    "bio": {
+                        "type": "string"
+                    },
+                    "bot": {
+                        "type": "boolean"
+                    }
+                },
+                "required": [
+                    "bio",
+                    "bot",
+                    "discriminator",
+                    "id",
+                    "public_flags",
+                    "username"
+                ]
+            },
+            "PublicConnectedAccount": {
+                "type": "object",
+                "properties": {
+                    "name": {
+                        "type": "string"
+                    },
+                    "type": {
+                        "type": "string"
+                    },
+                    "verifie": {
+                        "type": "boolean"
+                    }
+                },
+                "required": [
+                    "name",
+                    "type",
+                    "verifie"
+                ]
             }
         },
         "$schema": "http://json-schema.org/draft-07/schema#"
@@ -4913,7 +6553,6 @@
                 "type": "boolean"
             }
         },
-        "additionalProperties": false,
         "required": [
             "channel_id"
         ],
@@ -4968,7 +6607,6 @@
                                 "type": "string"
                             }
                         },
-                        "additionalProperties": false,
                         "required": [
                             "text"
                         ]
@@ -4991,8 +6629,7 @@
                             "url": {
                                 "type": "string"
                             }
-                        },
-                        "additionalProperties": false
+                        }
                     },
                     "author": {
                         "type": "object",
@@ -5009,8 +6646,7 @@
                             "proxy_icon_url": {
                                 "type": "string"
                             }
-                        },
-                        "additionalProperties": false
+                        }
                     },
                     "fields": {
                         "type": "array",
@@ -5027,15 +6663,13 @@
                                     "type": "boolean"
                                 }
                             },
-                            "additionalProperties": false,
                             "required": [
                                 "name",
                                 "value"
                             ]
                         }
                     }
-                },
-                "additionalProperties": false
+                }
             },
             "EmbedImage": {
                 "type": "object",
@@ -5052,8 +6686,7 @@
                     "width": {
                         "type": "integer"
                     }
-                },
-                "additionalProperties": false
+                }
             },
             "ChannelModifySchema": {
                 "type": "object",
@@ -5111,13 +6744,12 @@
                                     "$ref": "#/definitions/ChannelPermissionOverwriteType"
                                 },
                                 "allow": {
-                                    "type": "bigint"
+                                    "type": "string"
                                 },
                                 "deny": {
-                                    "type": "bigint"
+                                    "type": "string"
                                 }
                             },
-                            "additionalProperties": false,
                             "required": [
                                 "allow",
                                 "deny",
@@ -5141,17 +6773,66 @@
                     "default_auto_archive_duration": {
                         "type": "integer"
                     }
-                },
-                "additionalProperties": false
+                }
             },
-            "RelationshipType": {
-                "enum": [
-                    1,
-                    2,
-                    3,
-                    4
-                ],
-                "type": "number"
+            "UserPublic": {
+                "type": "object",
+                "properties": {
+                    "username": {
+                        "type": "string"
+                    },
+                    "discriminator": {
+                        "type": "string"
+                    },
+                    "id": {
+                        "type": "string"
+                    },
+                    "public_flags": {
+                        "type": "integer"
+                    },
+                    "avatar": {
+                        "type": "string"
+                    },
+                    "accent_color": {
+                        "type": "integer"
+                    },
+                    "banner": {
+                        "type": "string"
+                    },
+                    "bio": {
+                        "type": "string"
+                    },
+                    "bot": {
+                        "type": "boolean"
+                    }
+                },
+                "required": [
+                    "bio",
+                    "bot",
+                    "discriminator",
+                    "id",
+                    "public_flags",
+                    "username"
+                ]
+            },
+            "PublicConnectedAccount": {
+                "type": "object",
+                "properties": {
+                    "name": {
+                        "type": "string"
+                    },
+                    "type": {
+                        "type": "string"
+                    },
+                    "verifie": {
+                        "type": "boolean"
+                    }
+                },
+                "required": [
+                    "name",
+                    "type",
+                    "verifie"
+                ]
             }
         },
         "$schema": "http://json-schema.org/draft-07/schema#"
@@ -5177,7 +6858,6 @@
                             "type": "string"
                         }
                     },
-                    "additionalProperties": false,
                     "required": [
                         "channel_id",
                         "description",
@@ -5192,7 +6872,6 @@
                 "type": "string"
             }
         },
-        "additionalProperties": false,
         "definitions": {
             "ChannelPermissionOverwriteType": {
                 "enum": [
@@ -5244,7 +6923,6 @@
                                 "type": "string"
                             }
                         },
-                        "additionalProperties": false,
                         "required": [
                             "text"
                         ]
@@ -5267,8 +6945,7 @@
                             "url": {
                                 "type": "string"
                             }
-                        },
-                        "additionalProperties": false
+                        }
                     },
                     "author": {
                         "type": "object",
@@ -5285,8 +6962,7 @@
                             "proxy_icon_url": {
                                 "type": "string"
                             }
-                        },
-                        "additionalProperties": false
+                        }
                     },
                     "fields": {
                         "type": "array",
@@ -5303,15 +6979,13 @@
                                     "type": "boolean"
                                 }
                             },
-                            "additionalProperties": false,
                             "required": [
                                 "name",
                                 "value"
                             ]
                         }
                     }
-                },
-                "additionalProperties": false
+                }
             },
             "EmbedImage": {
                 "type": "object",
@@ -5328,8 +7002,7 @@
                     "width": {
                         "type": "integer"
                     }
-                },
-                "additionalProperties": false
+                }
             },
             "ChannelModifySchema": {
                 "type": "object",
@@ -5387,13 +7060,12 @@
                                     "$ref": "#/definitions/ChannelPermissionOverwriteType"
                                 },
                                 "allow": {
-                                    "type": "bigint"
+                                    "type": "string"
                                 },
                                 "deny": {
-                                    "type": "bigint"
+                                    "type": "string"
                                 }
                             },
-                            "additionalProperties": false,
                             "required": [
                                 "allow",
                                 "deny",
@@ -5417,17 +7089,66 @@
                     "default_auto_archive_duration": {
                         "type": "integer"
                     }
-                },
-                "additionalProperties": false
+                }
             },
-            "RelationshipType": {
-                "enum": [
-                    1,
-                    2,
-                    3,
-                    4
-                ],
-                "type": "number"
+            "UserPublic": {
+                "type": "object",
+                "properties": {
+                    "username": {
+                        "type": "string"
+                    },
+                    "discriminator": {
+                        "type": "string"
+                    },
+                    "id": {
+                        "type": "string"
+                    },
+                    "public_flags": {
+                        "type": "integer"
+                    },
+                    "avatar": {
+                        "type": "string"
+                    },
+                    "accent_color": {
+                        "type": "integer"
+                    },
+                    "banner": {
+                        "type": "string"
+                    },
+                    "bio": {
+                        "type": "string"
+                    },
+                    "bot": {
+                        "type": "boolean"
+                    }
+                },
+                "required": [
+                    "bio",
+                    "bot",
+                    "discriminator",
+                    "id",
+                    "public_flags",
+                    "username"
+                ]
+            },
+            "PublicConnectedAccount": {
+                "type": "object",
+                "properties": {
+                    "name": {
+                        "type": "string"
+                    },
+                    "type": {
+                        "type": "string"
+                    },
+                    "verifie": {
+                        "type": "boolean"
+                    }
+                },
+                "required": [
+                    "name",
+                    "type",
+                    "verifie"
+                ]
             }
         },
         "$schema": "http://json-schema.org/draft-07/schema#"
@@ -5442,7 +7163,6 @@
                 "type": "string"
             }
         },
-        "additionalProperties": false,
         "required": [
             "channel_id",
             "enabled"
@@ -5498,7 +7218,6 @@
                                 "type": "string"
                             }
                         },
-                        "additionalProperties": false,
                         "required": [
                             "text"
                         ]
@@ -5521,8 +7240,7 @@
                             "url": {
                                 "type": "string"
                             }
-                        },
-                        "additionalProperties": false
+                        }
                     },
                     "author": {
                         "type": "object",
@@ -5539,8 +7257,7 @@
                             "proxy_icon_url": {
                                 "type": "string"
                             }
-                        },
-                        "additionalProperties": false
+                        }
                     },
                     "fields": {
                         "type": "array",
@@ -5557,15 +7274,13 @@
                                     "type": "boolean"
                                 }
                             },
-                            "additionalProperties": false,
                             "required": [
                                 "name",
                                 "value"
                             ]
                         }
                     }
-                },
-                "additionalProperties": false
+                }
             },
             "EmbedImage": {
                 "type": "object",
@@ -5582,8 +7297,7 @@
                     "width": {
                         "type": "integer"
                     }
-                },
-                "additionalProperties": false
+                }
             },
             "ChannelModifySchema": {
                 "type": "object",
@@ -5641,13 +7355,12 @@
                                     "$ref": "#/definitions/ChannelPermissionOverwriteType"
                                 },
                                 "allow": {
-                                    "type": "bigint"
+                                    "type": "string"
                                 },
                                 "deny": {
-                                    "type": "bigint"
+                                    "type": "string"
                                 }
                             },
-                            "additionalProperties": false,
                             "required": [
                                 "allow",
                                 "deny",
@@ -5671,17 +7384,66 @@
                     "default_auto_archive_duration": {
                         "type": "integer"
                     }
-                },
-                "additionalProperties": false
+                }
             },
-            "RelationshipType": {
-                "enum": [
-                    1,
-                    2,
-                    3,
-                    4
-                ],
-                "type": "number"
+            "UserPublic": {
+                "type": "object",
+                "properties": {
+                    "username": {
+                        "type": "string"
+                    },
+                    "discriminator": {
+                        "type": "string"
+                    },
+                    "id": {
+                        "type": "string"
+                    },
+                    "public_flags": {
+                        "type": "integer"
+                    },
+                    "avatar": {
+                        "type": "string"
+                    },
+                    "accent_color": {
+                        "type": "integer"
+                    },
+                    "banner": {
+                        "type": "string"
+                    },
+                    "bio": {
+                        "type": "string"
+                    },
+                    "bot": {
+                        "type": "boolean"
+                    }
+                },
+                "required": [
+                    "bio",
+                    "bot",
+                    "discriminator",
+                    "id",
+                    "public_flags",
+                    "username"
+                ]
+            },
+            "PublicConnectedAccount": {
+                "type": "object",
+                "properties": {
+                    "name": {
+                        "type": "string"
+                    },
+                    "type": {
+                        "type": "string"
+                    },
+                    "verifie": {
+                        "type": "boolean"
+                    }
+                },
+                "required": [
+                    "name",
+                    "type",
+                    "verifie"
+                ]
             }
         },
         "$schema": "http://json-schema.org/draft-07/schema#"
@@ -5699,7 +7461,6 @@
                 ]
             }
         },
-        "additionalProperties": false,
         "required": [
             "name"
         ],
@@ -5754,7 +7515,6 @@
                                 "type": "string"
                             }
                         },
-                        "additionalProperties": false,
                         "required": [
                             "text"
                         ]
@@ -5777,8 +7537,7 @@
                             "url": {
                                 "type": "string"
                             }
-                        },
-                        "additionalProperties": false
+                        }
                     },
                     "author": {
                         "type": "object",
@@ -5795,8 +7554,7 @@
                             "proxy_icon_url": {
                                 "type": "string"
                             }
-                        },
-                        "additionalProperties": false
+                        }
                     },
                     "fields": {
                         "type": "array",
@@ -5813,15 +7571,13 @@
                                     "type": "boolean"
                                 }
                             },
-                            "additionalProperties": false,
                             "required": [
                                 "name",
                                 "value"
                             ]
                         }
                     }
-                },
-                "additionalProperties": false
+                }
             },
             "EmbedImage": {
                 "type": "object",
@@ -5838,8 +7594,7 @@
                     "width": {
                         "type": "integer"
                     }
-                },
-                "additionalProperties": false
+                }
             },
             "ChannelModifySchema": {
                 "type": "object",
@@ -5897,13 +7652,12 @@
                                     "$ref": "#/definitions/ChannelPermissionOverwriteType"
                                 },
                                 "allow": {
-                                    "type": "bigint"
+                                    "type": "string"
                                 },
                                 "deny": {
-                                    "type": "bigint"
+                                    "type": "string"
                                 }
                             },
-                            "additionalProperties": false,
                             "required": [
                                 "allow",
                                 "deny",
@@ -5927,17 +7681,369 @@
                     "default_auto_archive_duration": {
                         "type": "integer"
                     }
-                },
-                "additionalProperties": false
+                }
             },
-            "RelationshipType": {
+            "UserPublic": {
+                "type": "object",
+                "properties": {
+                    "username": {
+                        "type": "string"
+                    },
+                    "discriminator": {
+                        "type": "string"
+                    },
+                    "id": {
+                        "type": "string"
+                    },
+                    "public_flags": {
+                        "type": "integer"
+                    },
+                    "avatar": {
+                        "type": "string"
+                    },
+                    "accent_color": {
+                        "type": "integer"
+                    },
+                    "banner": {
+                        "type": "string"
+                    },
+                    "bio": {
+                        "type": "string"
+                    },
+                    "bot": {
+                        "type": "boolean"
+                    }
+                },
+                "required": [
+                    "bio",
+                    "bot",
+                    "discriminator",
+                    "id",
+                    "public_flags",
+                    "username"
+                ]
+            },
+            "PublicConnectedAccount": {
+                "type": "object",
+                "properties": {
+                    "name": {
+                        "type": "string"
+                    },
+                    "type": {
+                        "type": "string"
+                    },
+                    "verifie": {
+                        "type": "boolean"
+                    }
+                },
+                "required": [
+                    "name",
+                    "type",
+                    "verifie"
+                ]
+            }
+        },
+        "$schema": "http://json-schema.org/draft-07/schema#"
+    },
+    "UserProfileResponse": {
+        "type": "object",
+        "properties": {
+            "user": {
+                "$ref": "#/definitions/UserPublic"
+            },
+            "connected_accounts": {
+                "$ref": "#/definitions/PublicConnectedAccount"
+            },
+            "premium_guild_since": {
+                "type": "string",
+                "format": "date-time"
+            },
+            "premium_since": {
+                "type": "string",
+                "format": "date-time"
+            }
+        },
+        "required": [
+            "connected_accounts",
+            "user"
+        ],
+        "definitions": {
+            "ChannelPermissionOverwriteType": {
                 "enum": [
-                    1,
-                    2,
-                    3,
-                    4
+                    0,
+                    1
                 ],
                 "type": "number"
+            },
+            "Embed": {
+                "type": "object",
+                "properties": {
+                    "title": {
+                        "type": "string"
+                    },
+                    "type": {
+                        "enum": [
+                            "article",
+                            "gifv",
+                            "image",
+                            "link",
+                            "rich",
+                            "video"
+                        ],
+                        "type": "string"
+                    },
+                    "description": {
+                        "type": "string"
+                    },
+                    "url": {
+                        "type": "string"
+                    },
+                    "timestamp": {
+                        "type": "string",
+                        "format": "date-time"
+                    },
+                    "color": {
+                        "type": "integer"
+                    },
+                    "footer": {
+                        "type": "object",
+                        "properties": {
+                            "text": {
+                                "type": "string"
+                            },
+                            "icon_url": {
+                                "type": "string"
+                            },
+                            "proxy_icon_url": {
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "text"
+                        ]
+                    },
+                    "image": {
+                        "$ref": "#/definitions/EmbedImage"
+                    },
+                    "thumbnail": {
+                        "$ref": "#/definitions/EmbedImage"
+                    },
+                    "video": {
+                        "$ref": "#/definitions/EmbedImage"
+                    },
+                    "provider": {
+                        "type": "object",
+                        "properties": {
+                            "name": {
+                                "type": "string"
+                            },
+                            "url": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "author": {
+                        "type": "object",
+                        "properties": {
+                            "name": {
+                                "type": "string"
+                            },
+                            "url": {
+                                "type": "string"
+                            },
+                            "icon_url": {
+                                "type": "string"
+                            },
+                            "proxy_icon_url": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "fields": {
+                        "type": "array",
+                        "items": {
+                            "type": "object",
+                            "properties": {
+                                "name": {
+                                    "type": "string"
+                                },
+                                "value": {
+                                    "type": "string"
+                                },
+                                "inline": {
+                                    "type": "boolean"
+                                }
+                            },
+                            "required": [
+                                "name",
+                                "value"
+                            ]
+                        }
+                    }
+                }
+            },
+            "EmbedImage": {
+                "type": "object",
+                "properties": {
+                    "url": {
+                        "type": "string"
+                    },
+                    "proxy_url": {
+                        "type": "string"
+                    },
+                    "height": {
+                        "type": "integer"
+                    },
+                    "width": {
+                        "type": "integer"
+                    }
+                }
+            },
+            "ChannelModifySchema": {
+                "type": "object",
+                "properties": {
+                    "name": {
+                        "maxLength": 100,
+                        "type": "string"
+                    },
+                    "type": {
+                        "enum": [
+                            0,
+                            1,
+                            10,
+                            11,
+                            12,
+                            13,
+                            2,
+                            3,
+                            4,
+                            5,
+                            6
+                        ],
+                        "type": "number"
+                    },
+                    "topic": {
+                        "type": "string"
+                    },
+                    "icon": {
+                        "type": [
+                            "null",
+                            "string"
+                        ]
+                    },
+                    "bitrate": {
+                        "type": "integer"
+                    },
+                    "user_limit": {
+                        "type": "integer"
+                    },
+                    "rate_limit_per_user": {
+                        "type": "integer"
+                    },
+                    "position": {
+                        "type": "integer"
+                    },
+                    "permission_overwrites": {
+                        "type": "array",
+                        "items": {
+                            "type": "object",
+                            "properties": {
+                                "id": {
+                                    "type": "string"
+                                },
+                                "type": {
+                                    "$ref": "#/definitions/ChannelPermissionOverwriteType"
+                                },
+                                "allow": {
+                                    "type": "string"
+                                },
+                                "deny": {
+                                    "type": "string"
+                                }
+                            },
+                            "required": [
+                                "allow",
+                                "deny",
+                                "id",
+                                "type"
+                            ]
+                        }
+                    },
+                    "parent_id": {
+                        "type": "string"
+                    },
+                    "id": {
+                        "type": "string"
+                    },
+                    "nsfw": {
+                        "type": "boolean"
+                    },
+                    "rtc_region": {
+                        "type": "string"
+                    },
+                    "default_auto_archive_duration": {
+                        "type": "integer"
+                    }
+                }
+            },
+            "UserPublic": {
+                "type": "object",
+                "properties": {
+                    "username": {
+                        "type": "string"
+                    },
+                    "discriminator": {
+                        "type": "string"
+                    },
+                    "id": {
+                        "type": "string"
+                    },
+                    "public_flags": {
+                        "type": "integer"
+                    },
+                    "avatar": {
+                        "type": "string"
+                    },
+                    "accent_color": {
+                        "type": "integer"
+                    },
+                    "banner": {
+                        "type": "string"
+                    },
+                    "bio": {
+                        "type": "string"
+                    },
+                    "bot": {
+                        "type": "boolean"
+                    }
+                },
+                "required": [
+                    "bio",
+                    "bot",
+                    "discriminator",
+                    "id",
+                    "public_flags",
+                    "username"
+                ]
+            },
+            "PublicConnectedAccount": {
+                "type": "object",
+                "properties": {
+                    "name": {
+                        "type": "string"
+                    },
+                    "type": {
+                        "type": "string"
+                    },
+                    "verifie": {
+                        "type": "boolean"
+                    }
+                },
+                "required": [
+                    "name",
+                    "type",
+                    "verifie"
+                ]
             }
         },
         "$schema": "http://json-schema.org/draft-07/schema#"
@@ -5955,7 +8061,6 @@
                 }
             }
         },
-        "additionalProperties": false,
         "required": [
             "recipients"
         ],
@@ -6010,7 +8115,6 @@
                                 "type": "string"
                             }
                         },
-                        "additionalProperties": false,
                         "required": [
                             "text"
                         ]
@@ -6033,8 +8137,7 @@
                             "url": {
                                 "type": "string"
                             }
-                        },
-                        "additionalProperties": false
+                        }
                     },
                     "author": {
                         "type": "object",
@@ -6051,8 +8154,7 @@
                             "proxy_icon_url": {
                                 "type": "string"
                             }
-                        },
-                        "additionalProperties": false
+                        }
                     },
                     "fields": {
                         "type": "array",
@@ -6069,15 +8171,13 @@
                                     "type": "boolean"
                                 }
                             },
-                            "additionalProperties": false,
                             "required": [
                                 "name",
                                 "value"
                             ]
                         }
                     }
-                },
-                "additionalProperties": false
+                }
             },
             "EmbedImage": {
                 "type": "object",
@@ -6094,8 +8194,7 @@
                     "width": {
                         "type": "integer"
                     }
-                },
-                "additionalProperties": false
+                }
             },
             "ChannelModifySchema": {
                 "type": "object",
@@ -6153,13 +8252,12 @@
                                     "$ref": "#/definitions/ChannelPermissionOverwriteType"
                                 },
                                 "allow": {
-                                    "type": "bigint"
+                                    "type": "string"
                                 },
                                 "deny": {
-                                    "type": "bigint"
+                                    "type": "string"
                                 }
                             },
-                            "additionalProperties": false,
                             "required": [
                                 "allow",
                                 "deny",
@@ -6183,17 +8281,66 @@
                     "default_auto_archive_duration": {
                         "type": "integer"
                     }
-                },
-                "additionalProperties": false
+                }
             },
-            "RelationshipType": {
-                "enum": [
-                    1,
-                    2,
-                    3,
-                    4
-                ],
-                "type": "number"
+            "UserPublic": {
+                "type": "object",
+                "properties": {
+                    "username": {
+                        "type": "string"
+                    },
+                    "discriminator": {
+                        "type": "string"
+                    },
+                    "id": {
+                        "type": "string"
+                    },
+                    "public_flags": {
+                        "type": "integer"
+                    },
+                    "avatar": {
+                        "type": "string"
+                    },
+                    "accent_color": {
+                        "type": "integer"
+                    },
+                    "banner": {
+                        "type": "string"
+                    },
+                    "bio": {
+                        "type": "string"
+                    },
+                    "bot": {
+                        "type": "boolean"
+                    }
+                },
+                "required": [
+                    "bio",
+                    "bot",
+                    "discriminator",
+                    "id",
+                    "public_flags",
+                    "username"
+                ]
+            },
+            "PublicConnectedAccount": {
+                "type": "object",
+                "properties": {
+                    "name": {
+                        "type": "string"
+                    },
+                    "type": {
+                        "type": "string"
+                    },
+                    "verifie": {
+                        "type": "boolean"
+                    }
+                },
+                "required": [
+                    "name",
+                    "type",
+                    "verifie"
+                ]
             }
         },
         "$schema": "http://json-schema.org/draft-07/schema#"
@@ -6235,7 +8382,6 @@
                 "type": "string"
             }
         },
-        "additionalProperties": false,
         "definitions": {
             "ChannelPermissionOverwriteType": {
                 "enum": [
@@ -6287,7 +8433,6 @@
                                 "type": "string"
                             }
                         },
-                        "additionalProperties": false,
                         "required": [
                             "text"
                         ]
@@ -6310,8 +8455,7 @@
                             "url": {
                                 "type": "string"
                             }
-                        },
-                        "additionalProperties": false
+                        }
                     },
                     "author": {
                         "type": "object",
@@ -6328,8 +8472,7 @@
                             "proxy_icon_url": {
                                 "type": "string"
                             }
-                        },
-                        "additionalProperties": false
+                        }
                     },
                     "fields": {
                         "type": "array",
@@ -6346,15 +8489,13 @@
                                     "type": "boolean"
                                 }
                             },
-                            "additionalProperties": false,
                             "required": [
                                 "name",
                                 "value"
                             ]
                         }
                     }
-                },
-                "additionalProperties": false
+                }
             },
             "EmbedImage": {
                 "type": "object",
@@ -6371,8 +8512,7 @@
                     "width": {
                         "type": "integer"
                     }
-                },
-                "additionalProperties": false
+                }
             },
             "ChannelModifySchema": {
                 "type": "object",
@@ -6430,13 +8570,12 @@
                                     "$ref": "#/definitions/ChannelPermissionOverwriteType"
                                 },
                                 "allow": {
-                                    "type": "bigint"
+                                    "type": "string"
                                 },
                                 "deny": {
-                                    "type": "bigint"
+                                    "type": "string"
                                 }
                             },
-                            "additionalProperties": false,
                             "required": [
                                 "allow",
                                 "deny",
@@ -6460,17 +8599,66 @@
                     "default_auto_archive_duration": {
                         "type": "integer"
                     }
-                },
-                "additionalProperties": false
+                }
             },
-            "RelationshipType": {
-                "enum": [
-                    1,
-                    2,
-                    3,
-                    4
-                ],
-                "type": "number"
+            "UserPublic": {
+                "type": "object",
+                "properties": {
+                    "username": {
+                        "type": "string"
+                    },
+                    "discriminator": {
+                        "type": "string"
+                    },
+                    "id": {
+                        "type": "string"
+                    },
+                    "public_flags": {
+                        "type": "integer"
+                    },
+                    "avatar": {
+                        "type": "string"
+                    },
+                    "accent_color": {
+                        "type": "integer"
+                    },
+                    "banner": {
+                        "type": "string"
+                    },
+                    "bio": {
+                        "type": "string"
+                    },
+                    "bot": {
+                        "type": "boolean"
+                    }
+                },
+                "required": [
+                    "bio",
+                    "bot",
+                    "discriminator",
+                    "id",
+                    "public_flags",
+                    "username"
+                ]
+            },
+            "PublicConnectedAccount": {
+                "type": "object",
+                "properties": {
+                    "name": {
+                        "type": "string"
+                    },
+                    "type": {
+                        "type": "string"
+                    },
+                    "verifie": {
+                        "type": "boolean"
+                    }
+                },
+                "required": [
+                    "name",
+                    "type",
+                    "verifie"
+                ]
             }
         },
         "$schema": "http://json-schema.org/draft-07/schema#"
@@ -6479,13 +8667,15 @@
         "type": "object",
         "properties": {
             "type": {
-                "$ref": "#/definitions/RelationshipType"
+                "enum": [
+                    1,
+                    2,
+                    3,
+                    4
+                ],
+                "type": "number"
             }
         },
-        "additionalProperties": false,
-        "required": [
-            "type"
-        ],
         "definitions": {
             "ChannelPermissionOverwriteType": {
                 "enum": [
@@ -6537,7 +8727,6 @@
                                 "type": "string"
                             }
                         },
-                        "additionalProperties": false,
                         "required": [
                             "text"
                         ]
@@ -6560,8 +8749,7 @@
                             "url": {
                                 "type": "string"
                             }
-                        },
-                        "additionalProperties": false
+                        }
                     },
                     "author": {
                         "type": "object",
@@ -6578,8 +8766,7 @@
                             "proxy_icon_url": {
                                 "type": "string"
                             }
-                        },
-                        "additionalProperties": false
+                        }
                     },
                     "fields": {
                         "type": "array",
@@ -6596,15 +8783,13 @@
                                     "type": "boolean"
                                 }
                             },
-                            "additionalProperties": false,
                             "required": [
                                 "name",
                                 "value"
                             ]
                         }
                     }
-                },
-                "additionalProperties": false
+                }
             },
             "EmbedImage": {
                 "type": "object",
@@ -6621,8 +8806,7 @@
                     "width": {
                         "type": "integer"
                     }
-                },
-                "additionalProperties": false
+                }
             },
             "ChannelModifySchema": {
                 "type": "object",
@@ -6680,13 +8864,12 @@
                                     "$ref": "#/definitions/ChannelPermissionOverwriteType"
                                 },
                                 "allow": {
-                                    "type": "bigint"
+                                    "type": "string"
                                 },
                                 "deny": {
-                                    "type": "bigint"
+                                    "type": "string"
                                 }
                             },
-                            "additionalProperties": false,
                             "required": [
                                 "allow",
                                 "deny",
@@ -6710,17 +8893,66 @@
                     "default_auto_archive_duration": {
                         "type": "integer"
                     }
-                },
-                "additionalProperties": false
+                }
             },
-            "RelationshipType": {
-                "enum": [
-                    1,
-                    2,
-                    3,
-                    4
-                ],
-                "type": "number"
+            "UserPublic": {
+                "type": "object",
+                "properties": {
+                    "username": {
+                        "type": "string"
+                    },
+                    "discriminator": {
+                        "type": "string"
+                    },
+                    "id": {
+                        "type": "string"
+                    },
+                    "public_flags": {
+                        "type": "integer"
+                    },
+                    "avatar": {
+                        "type": "string"
+                    },
+                    "accent_color": {
+                        "type": "integer"
+                    },
+                    "banner": {
+                        "type": "string"
+                    },
+                    "bio": {
+                        "type": "string"
+                    },
+                    "bot": {
+                        "type": "boolean"
+                    }
+                },
+                "required": [
+                    "bio",
+                    "bot",
+                    "discriminator",
+                    "id",
+                    "public_flags",
+                    "username"
+                ]
+            },
+            "PublicConnectedAccount": {
+                "type": "object",
+                "properties": {
+                    "name": {
+                        "type": "string"
+                    },
+                    "type": {
+                        "type": "string"
+                    },
+                    "verifie": {
+                        "type": "boolean"
+                    }
+                },
+                "required": [
+                    "name",
+                    "type",
+                    "verifie"
+                ]
             }
         },
         "$schema": "http://json-schema.org/draft-07/schema#"
@@ -6735,7 +8967,6 @@
                 "type": "string"
             }
         },
-        "additionalProperties": false,
         "required": [
             "discriminator",
             "username"
@@ -6791,7 +9022,6 @@
                                 "type": "string"
                             }
                         },
-                        "additionalProperties": false,
                         "required": [
                             "text"
                         ]
@@ -6814,8 +9044,7 @@
                             "url": {
                                 "type": "string"
                             }
-                        },
-                        "additionalProperties": false
+                        }
                     },
                     "author": {
                         "type": "object",
@@ -6832,8 +9061,7 @@
                             "proxy_icon_url": {
                                 "type": "string"
                             }
-                        },
-                        "additionalProperties": false
+                        }
                     },
                     "fields": {
                         "type": "array",
@@ -6850,15 +9078,13 @@
                                     "type": "boolean"
                                 }
                             },
-                            "additionalProperties": false,
                             "required": [
                                 "name",
                                 "value"
                             ]
                         }
                     }
-                },
-                "additionalProperties": false
+                }
             },
             "EmbedImage": {
                 "type": "object",
@@ -6875,8 +9101,7 @@
                     "width": {
                         "type": "integer"
                     }
-                },
-                "additionalProperties": false
+                }
             },
             "ChannelModifySchema": {
                 "type": "object",
@@ -6934,13 +9159,12 @@
                                     "$ref": "#/definitions/ChannelPermissionOverwriteType"
                                 },
                                 "allow": {
-                                    "type": "bigint"
+                                    "type": "string"
                                 },
                                 "deny": {
-                                    "type": "bigint"
+                                    "type": "string"
                                 }
                             },
-                            "additionalProperties": false,
                             "required": [
                                 "allow",
                                 "deny",
@@ -6964,17 +9188,66 @@
                     "default_auto_archive_duration": {
                         "type": "integer"
                     }
-                },
-                "additionalProperties": false
+                }
             },
-            "RelationshipType": {
-                "enum": [
-                    1,
-                    2,
-                    3,
-                    4
-                ],
-                "type": "number"
+            "UserPublic": {
+                "type": "object",
+                "properties": {
+                    "username": {
+                        "type": "string"
+                    },
+                    "discriminator": {
+                        "type": "string"
+                    },
+                    "id": {
+                        "type": "string"
+                    },
+                    "public_flags": {
+                        "type": "integer"
+                    },
+                    "avatar": {
+                        "type": "string"
+                    },
+                    "accent_color": {
+                        "type": "integer"
+                    },
+                    "banner": {
+                        "type": "string"
+                    },
+                    "bio": {
+                        "type": "string"
+                    },
+                    "bot": {
+                        "type": "boolean"
+                    }
+                },
+                "required": [
+                    "bio",
+                    "bot",
+                    "discriminator",
+                    "id",
+                    "public_flags",
+                    "username"
+                ]
+            },
+            "PublicConnectedAccount": {
+                "type": "object",
+                "properties": {
+                    "name": {
+                        "type": "string"
+                    },
+                    "type": {
+                        "type": "string"
+                    },
+                    "verifie": {
+                        "type": "boolean"
+                    }
+                },
+                "required": [
+                    "name",
+                    "type",
+                    "verifie"
+                ]
             }
         },
         "$schema": "http://json-schema.org/draft-07/schema#"
@@ -7015,8 +9288,7 @@
                     "text": {
                         "type": "string"
                     }
-                },
-                "additionalProperties": false
+                }
             },
             "default_guilds_restricted": {
                 "type": "boolean"
@@ -7043,7 +9315,6 @@
                         "type": "boolean"
                     }
                 },
-                "additionalProperties": false,
                 "required": [
                     "all"
                 ]
@@ -7075,7 +9346,6 @@
                             "type": "string"
                         }
                     },
-                    "additionalProperties": false,
                     "required": [
                         "color",
                         "guild_ids",
@@ -7143,40 +9413,6 @@
                 "type": "integer"
             }
         },
-        "additionalProperties": false,
-        "required": [
-            "afk_timeout",
-            "allow_accessibility_detection",
-            "animate_emoji",
-            "animate_stickers",
-            "contact_sync_enabled",
-            "convert_emoticons",
-            "custom_status",
-            "default_guilds_restricted",
-            "detect_platform_accounts",
-            "developer_mode",
-            "disable_games_tab",
-            "enable_tts_command",
-            "explicit_content_filter",
-            "friend_source_flags",
-            "gateway_connected",
-            "gif_auto_play",
-            "guild_folders",
-            "guild_positions",
-            "inline_attachment_media",
-            "inline_embed_media",
-            "locale",
-            "message_display_compact",
-            "native_phone_integration_enabled",
-            "render_embeds",
-            "render_reactions",
-            "restricted_guilds",
-            "show_current_game",
-            "status",
-            "stream_notifications_enabled",
-            "theme",
-            "timezone_offset"
-        ],
         "definitions": {
             "ChannelPermissionOverwriteType": {
                 "enum": [
@@ -7228,7 +9464,6 @@
                                 "type": "string"
                             }
                         },
-                        "additionalProperties": false,
                         "required": [
                             "text"
                         ]
@@ -7251,8 +9486,7 @@
                             "url": {
                                 "type": "string"
                             }
-                        },
-                        "additionalProperties": false
+                        }
                     },
                     "author": {
                         "type": "object",
@@ -7269,8 +9503,7 @@
                             "proxy_icon_url": {
                                 "type": "string"
                             }
-                        },
-                        "additionalProperties": false
+                        }
                     },
                     "fields": {
                         "type": "array",
@@ -7287,15 +9520,13 @@
                                     "type": "boolean"
                                 }
                             },
-                            "additionalProperties": false,
                             "required": [
                                 "name",
                                 "value"
                             ]
                         }
                     }
-                },
-                "additionalProperties": false
+                }
             },
             "EmbedImage": {
                 "type": "object",
@@ -7312,8 +9543,7 @@
                     "width": {
                         "type": "integer"
                     }
-                },
-                "additionalProperties": false
+                }
             },
             "ChannelModifySchema": {
                 "type": "object",
@@ -7371,13 +9601,12 @@
                                     "$ref": "#/definitions/ChannelPermissionOverwriteType"
                                 },
                                 "allow": {
-                                    "type": "bigint"
+                                    "type": "string"
                                 },
                                 "deny": {
-                                    "type": "bigint"
+                                    "type": "string"
                                 }
                             },
-                            "additionalProperties": false,
                             "required": [
                                 "allow",
                                 "deny",
@@ -7401,17 +9630,66 @@
                     "default_auto_archive_duration": {
                         "type": "integer"
                     }
-                },
-                "additionalProperties": false
+                }
             },
-            "RelationshipType": {
-                "enum": [
-                    1,
-                    2,
-                    3,
-                    4
-                ],
-                "type": "number"
+            "UserPublic": {
+                "type": "object",
+                "properties": {
+                    "username": {
+                        "type": "string"
+                    },
+                    "discriminator": {
+                        "type": "string"
+                    },
+                    "id": {
+                        "type": "string"
+                    },
+                    "public_flags": {
+                        "type": "integer"
+                    },
+                    "avatar": {
+                        "type": "string"
+                    },
+                    "accent_color": {
+                        "type": "integer"
+                    },
+                    "banner": {
+                        "type": "string"
+                    },
+                    "bio": {
+                        "type": "string"
+                    },
+                    "bot": {
+                        "type": "boolean"
+                    }
+                },
+                "required": [
+                    "bio",
+                    "bot",
+                    "discriminator",
+                    "id",
+                    "public_flags",
+                    "username"
+                ]
+            },
+            "PublicConnectedAccount": {
+                "type": "object",
+                "properties": {
+                    "name": {
+                        "type": "string"
+                    },
+                    "type": {
+                        "type": "string"
+                    },
+                    "verifie": {
+                        "type": "boolean"
+                    }
+                },
+                "required": [
+                    "name",
+                    "type",
+                    "verifie"
+                ]
             }
         },
         "$schema": "http://json-schema.org/draft-07/schema#"

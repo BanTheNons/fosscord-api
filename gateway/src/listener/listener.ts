@@ -1,20 +1,20 @@
 import {
-	User,
 	getPermission,
 	Permissions,
-	Channel,
 	RabbitMQ,
 	listenEvent,
 	EventOpts,
 	ListenEventOpts,
 	Member,
+	EVENTEnum,
+	Relationship,
+	RelationshipType,
 } from "@fosscord/util";
-import { OPCODES } from "@fosscord/gateway/util/Constants";
-import { Send } from "@fosscord/gateway/util/Send";
-import WebSocket from "@fosscord/gateway/util/WebSocket";
+import { OPCODES } from "../util/Constants";
+import { Send } from "../util/Send";
+import { WebSocket } from "@fosscord/gateway";
 import "missing-native-js-functions";
 import { Channel as AMQChannel } from "amqplib";
-import { In, Like } from "typeorm";
 import { Recipient } from "@fosscord/util";
 
 // TODO: close connection on Invalidated Token
@@ -24,22 +24,45 @@ import { Recipient } from "@fosscord/util";
 // Sharding: calculate if the current shard id matches the formula: shard_id = (guild_id >> 22) % num_shards
 // https://discord.com/developers/docs/topics/gateway#sharding
 
+export function handlePresenceUpdate(
+	this: WebSocket,
+	{ event, acknowledge, data }: EventOpts
+) {
+	acknowledge?.();
+	if (event === EVENTEnum.PresenceUpdate) {
+		return Send(this, {
+			op: OPCODES.Dispatch,
+			t: event,
+			d: data,
+			s: this.sequence++,
+		});
+	}
+}
+
 // TODO: use already queried guilds/channels of Identify and don't fetch them again
 export async function setupListener(this: WebSocket) {
-	const members = await Member.find({
-		where: { id: this.user_id },
-		relations: ["guild", "guild.channels"],
-	});
+	const [members, recipients, relationships] = await Promise.all([
+		Member.find({
+			where: { id: this.user_id },
+			relations: ["guild", "guild.channels"],
+		}),
+		Recipient.find({
+			where: { user_id: this.user_id, closed: false },
+			relations: ["channel"],
+		}),
+		Relationship.find({
+			from_id: this.user_id,
+			type: RelationshipType.friends,
+		}),
+	]);
+
 	const guilds = members.map((x) => x.guild);
-	const recipients = await Recipient.find({
-		where: { user_id: this.user_id, closed: false },
-		relations: ["channel"],
-	});
 	const dm_channels = recipients.map((x) => x.channel);
 
 	const opts: { acknowledge: boolean; channel?: AMQChannel } = {
 		acknowledge: true,
 	};
+	this.listen_options = opts;
 	const consumer = consume.bind(this);
 
 	if (RabbitMQ.connection) {
@@ -50,60 +73,76 @@ export async function setupListener(this: WebSocket) {
 
 	this.events[this.user_id] = await listenEvent(this.user_id, consumer, opts);
 
-	for (const channel of dm_channels) {
+	relationships.forEach(async (relationship) => {
+		this.events[relationship.to_id] = await listenEvent(
+			relationship.to_id,
+			handlePresenceUpdate.bind(this),
+			opts
+		);
+	});
+
+	dm_channels.forEach(async (channel) => {
 		this.events[channel.id] = await listenEvent(channel.id, consumer, opts);
-	}
+	});
 
-	for (const guild of guilds) {
-		// contains guild and dm channels
+	guilds.forEach(async (guild) => {
+		const permission = await getPermission(this.user_id, guild.id);
+		this.permissions[guild.id] = permission;
+		this.events[guild.id] = await listenEvent(guild.id, consumer, opts);
 
-		getPermission(this.user_id, guild.id)
-			.then(async (x) => {
-				this.permissions[guild.id] = x;
-				this.listeners;
-				this.events[guild.id] = await listenEvent(
-					guild.id,
+		guild.channels.forEach(async (channel) => {
+			if (
+				permission
+					.overwriteChannel(channel.permission_overwrites!)
+					.has("VIEW_CHANNEL")
+			) {
+				this.events[channel.id] = await listenEvent(
+					channel.id,
 					consumer,
 					opts
 				);
-
-				for (const channel of guild.channels) {
-					if (
-						x
-							.overwriteChannel(channel.permission_overwrites!)
-							.has("VIEW_CHANNEL")
-					) {
-						this.events[channel.id] = await listenEvent(
-							channel.id,
-							consumer,
-							opts
-						);
-					}
-				}
-			})
-			.catch((e) =>
-				console.log("couldn't get permission for guild " + guild, e)
-			);
-	}
+			}
+		});
+	});
 
 	this.once("close", () => {
 		if (opts.channel) opts.channel.close();
-		else Object.values(this.events).forEach((x) => x());
+		else {
+			Object.values(this.events).forEach((x) => x());
+			Object.values(this.member_events).forEach((x) => x());
+		}
 	});
 }
 
 // TODO: only subscribe for events that are in the connection intents
 async function consume(this: WebSocket, opts: EventOpts) {
 	const { data, event } = opts;
-	const id = data.id as string;
+	let id = data.id as string;
 	const permission = this.permissions[id] || new Permissions("ADMINISTRATOR"); // default permission for dm
 
 	const consumer = consume.bind(this);
 	const listenOpts = opts as ListenEventOpts;
+	opts.acknowledge?.();
 	// console.log("event", event);
 
 	// subscription managment
 	switch (event) {
+		case "GUILD_MEMBER_REMOVE":
+			this.member_events[data.user.id]?.();
+			delete this.member_events[data.user.id];
+		case "GUILD_MEMBER_ADD":
+			if (this.member_events[data.user.id]) break; // already subscribed
+			this.member_events[data.user.id] = await listenEvent(
+				data.user.id,
+				handlePresenceUpdate.bind(this),
+				this.listen_options
+			);
+			break;
+		case "GUILD_MEMBER_REMOVE":
+			if (!this.member_events[data.user.id]) break;
+			this.member_events[data.user.id]();
+			break;
+		case "RELATIONSHIP_REMOVE":
 		case "CHANNEL_DELETE":
 		case "GUILD_DELETE":
 			delete this.events[id];
@@ -116,7 +155,14 @@ async function consume(this: WebSocket, opts: EventOpts) {
 					.has("VIEW_CHANNEL")
 			)
 				return;
-			//No break needed here, we need to call the listenEvent function below
+		// No break needed here, we need to call the listenEvent function below
+		case "RELATIONSHIP_ADD":
+			this.events[data.user.id] = await listenEvent(
+				data.user.id,
+				handlePresenceUpdate.bind(this),
+				this.listen_options
+			);
+			break;
 		case "GUILD_CREATE":
 			this.events[id] = await listenEvent(id, consumer, listenOpts);
 			break;
@@ -181,7 +227,7 @@ async function consume(this: WebSocket, opts: EventOpts) {
 		case "CHANNEL_CREATE":
 		case "CHANNEL_DELETE":
 		case "CHANNEL_UPDATE":
-		case "GUILD_EMOJI_UPDATE":
+		case "GUILD_EMOJIS_UPDATE":
 		case "READY": // will be sent by the gateway
 		case "USER_UPDATE":
 		case "APPLICATION_COMMAND_CREATE":
@@ -199,5 +245,4 @@ async function consume(this: WebSocket, opts: EventOpts) {
 		d: data,
 		s: this.sequence++,
 	});
-	opts.acknowledge?.();
 }
